@@ -1,31 +1,43 @@
-
-
 import Body from './Body';
 import Headers from './Headers';
 import Request from './Request';
 import Response from './Response';
 import {
     isPrototypeOfDataType,
+    normalizeValue,
     readBlobAsText,
+    setNonEnumerable,
     support,
     xhrResponseURL
 } from './utils';
 
+/**
+ * default options for Courier
+ */
 const DEFAULT_COURIER_OPTIONS = {
     cache: 'default',
     credentials: 'omit',
+    data: null,
     dataType: 'json',
     headers: new Headers(),
     method: 'GET',
     mode: 'no-cors',
     password: null,
+    queryStrings: [],
     referrer: null,
     type: 'json',
     url: null,
     username: null
 };
 
-const fetch = (input, init) => {
+/**
+ * performs the XHR request
+ *
+ * @param {Request|string} input
+ * @param {Object} init
+ * @returns {Promise}
+ */
+const performRequest = (input, init) => {
     return new Promise((resolve, reject) => {
         const request = isPrototypeOfDataType(input, Request) && !init ? input : new Request(input, init);
 
@@ -79,6 +91,12 @@ const fetch = (input, init) => {
     });
 };
 
+/**
+ * gets headers from XHR and converts them into Headers
+ *
+ * @param {Object} xhr
+ * @returns {Headers}
+ */
 const headers = (xhr) => {
     const pairs = xhr.getAllResponseHeaders().trim().split('\n');
 
@@ -96,38 +114,81 @@ const headers = (xhr) => {
 };
 
 class Courier {
-    constructor(options = DEFAULT_COURIER_OPTIONS) {
-        this._cache = options.cache;
-        this._data = null;
-        this._dataType = options.dataType;
-        this._credentials = options.credentials;
-        this._headers = options.headers;
-        this._method = options.method;
-        this._mode = options.mode;
-        this._queryStrings = [];
-        this._type = options.type;
-        this._url = options.url;
+    /**
+     * sets up parameters for Courier request
+     *
+     * @param {Object} options
+     * @returns {Courier}
+     */
+    constructor(options = {}) {
+        const thisOptions = Object.assign(DEFAULT_COURIER_OPTIONS, options);
+
+        console.log(options);
+
+        setNonEnumerable(this, '_cache', thisOptions.cache);
+        setNonEnumerable(this, '_data', thisOptions.data);
+        setNonEnumerable(this, '_dataType', thisOptions.dataType);
+        setNonEnumerable(this, '_credentials', thisOptions.credentials);
+        setNonEnumerable(this, '_headers', thisOptions.headers);
+        setNonEnumerable(this, '_method', thisOptions.method);
+        setNonEnumerable(this, '_mode', thisOptions.mode);
+        setNonEnumerable(this, '_password', thisOptions.password);
+        setNonEnumerable(this, '_queryStrings', thisOptions.queryStrings);
+        setNonEnumerable(this, '_type', thisOptions.type);
+        setNonEnumerable(this, '_url', thisOptions.url);
+        setNonEnumerable(this, '_username', thisOptions.username);
 
         return this;
     }
 
+    /**
+     * sets basic authentication credentials for request
+     *
+     * @param {string} username
+     * @param {string} password
+     * @returns {Courier}
+     */
     auth(username, password) {
         this._password = password;
         this._username = username;
+
+        return this;
     }
 
-    cache(cacheType) {
+    /**
+     * sets cache type for request
+     * valid types: default, no-store, reload, no-cache, force-cache, only-if-cached
+     *
+     * @param {string} cacheType
+     * @returns {Courier}
+     */
+    cache(cacheType = 'default') {
         this._cache = cacheType;
 
         return this;
     }
 
+    /**
+     * sets credentials type for request
+     * valid types: omit, same-origin, include
+     *
+     * @param {string} creds
+     * @returns {Courier}
+     */
     credentials(creds = 'include') {
         this._credentials = creds;
 
         return this;
     }
 
+    /**
+     * sets data to be passed in request body
+     * if property is an object, treats all key: value pairs as data to be added
+     *
+     * @param {string|Object} property
+     * @param {*} value
+     * @returns {Courier}
+     */
     data(property, value) {
         let dataToAdd = {};
 
@@ -150,16 +211,37 @@ class Courier {
         return this;
     }
 
+    /**
+     * sets dataFilter function to be executed prior to parsing
+     * fn will accept one parameter, the unparsed data returned in response
+     *
+     * @param {Function} fn
+     * @returns {Courier}
+     */
     dataFilter(fn) {
         this._dataFilter = fn;
 
         return this;
     }
 
+    /**
+     * sets data type of body in request
+     *
+     * @param {string} typeString
+     * @returns {Courier}
+     */
     dataType(typeString) {
         this._dataType = typeString;
+
+        return this;
     }
 
+    /**
+     * sets method of request to DELETE for url
+     *
+     * @param {string} url
+     * @returns {Courier}
+     */
     delete(url) {
         this._method = 'DELETE';
         this._url = url;
@@ -167,6 +249,12 @@ class Courier {
         return this;
     }
 
+    /**
+     * sets method of request to GET for url
+     *
+     * @param {string} url
+     * @returns {Courier}
+     */
     get(url) {
         this._method = 'GET';
         this._url = url;
@@ -174,6 +262,12 @@ class Courier {
         return this;
     }
 
+    /**
+     * sets method of request to HEAD for url
+     *
+     * @param {string} url
+     * @returns {Courier}
+     */
     head(url) {
         this._method = 'HEAD';
         this._url = url;
@@ -181,22 +275,65 @@ class Courier {
         return this;
     }
 
+    /**
+     * Sets header for request
+     * if header is Object, treats each key: value pair as header to be added
+     *
+     * @param {string|Object} header
+     * @param {string} value
+     * @returns {Courier}
+     */
     headers(header, value) {
         if (typeof header === 'object' && !!header) {
             Object.getOwnPropertyNames(header).forEach((name) => {
-                this._headers.append(name, header[name]);
+                const value = normalizeValue(header[name]);
+
+                name = normalizeValue(name);
+
+                this._headers.append(name, value);
             });
         } else {
+            header = normalizeValue(header);
+            value = normalizeValue(value);
+            
             this._headers.append(header, value);
         }
 
         return this;
     }
 
-    mode(modeString) {
+    /**
+     * sets mode of request
+     * valid values: same-origin, no-cors, cors
+     *
+     * @param {string}modeString
+     * @returns {Courier}
+     */
+    mode(modeString = 'same-origin') {
         this._mode = modeString;
+
+        return this;
     }
 
+    /**
+     * sets method of request to OPTIONS for url
+     *
+     * @param {string} url
+     * @returns {Courier}
+     */
+    options(url) {
+        this._method = 'OPTIONS';
+        this._url = url;
+
+        return this;
+    }
+
+    /**
+     * sets method of request to PATCH for url
+     *
+     * @param {string} url
+     * @returns {Courier}
+     */
     patch(url) {
         this._method = 'PATCH';
         this._url = url;
@@ -204,6 +341,12 @@ class Courier {
         return this;
     }
 
+    /**
+     * sets method of request to POST for url
+     *
+     * @param {string} url
+     * @returns {Courier}
+     */
     post(url) {
         this._method = 'POST';
         this._url = url;
@@ -211,6 +354,12 @@ class Courier {
         return this;
     }
 
+    /**
+     * sets method of request to PUT for url
+     *
+     * @param {string} url
+     * @returns {Courier}
+     */
     put(url) {
         this._method = 'PUT';
         this._url = url;
@@ -218,18 +367,39 @@ class Courier {
         return this;
     }
 
+    /**
+     * sets querystrings to be appended to URL on request
+     * if property is an object, treats each key: value pair as a querystring to be added
+     * 
+     * @param {string|Object} property
+     * @param {string|number} value
+     * @returns {Courier}
+     */
     query(property, value) {
         if (typeof property === 'object' && !!property) {
             Object.getOwnPropertyNames(property).forEach((name) => {
-                this._queryStrings.push(`${name}=${property[name]}`);
+                const value = normalizeValue(property[name]);
+
+                name = normalizeValue(name);
+                
+                this._queryStrings.push(`${name}=${value}`);
             });
         } else {
+            property = normalizeValue(property);
+            value = normalizeValue(value);
+            
             this._queryStrings.push(`${property}=${value}`);
         }
 
         return this;
     }
 
+    /**
+     * performs the request, executing callback passed to it upon completion
+     * callback receives three parameters: data, error, and the full response
+     * 
+     * @param {Function} callback
+     */
     send(callback) {
         const newHeaders = new Headers(this._headers);
 
@@ -277,6 +447,8 @@ class Courier {
             this._url = this._url.slice(0, -1);
         }
 
+        console.log(this._headers);
+
         const requestInit = {
             body: data ? new Body(data) : null,
             cache: this._cache,
@@ -293,7 +465,7 @@ class Courier {
         let error = null;
         let rawResponse;
 
-        fetch(request, requestInit)
+        performRequest(request, requestInit)
             .then((response) => {
                 rawResponse = response;
 
@@ -327,7 +499,15 @@ class Courier {
             });
     }
 
-    type(typeString) {
+    /**
+     * sets the type of response expected
+     * valid values: arraybuffer, blob, json
+     * if other values are passed, response is parsed as text
+     *
+     * @param {string} typeString
+     * @returns {Courier}
+     */
+    type(typeString = 'json') {
         this._type = typeString;
 
         return this;

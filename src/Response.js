@@ -1,14 +1,15 @@
-
-
 import Body from './Body';
 import Headers from './Headers';
-import {
-
-} from './utils';
 
 const REDIRECT_STATUSES = [301, 302, 303, 307, 308];
 
 class Response extends Body {
+    /**
+     * receives _bodyInit inherited from Body and applies response aspects from it
+     *
+     * @param {*} bodyInit
+     * @param {Object} options
+     */
     constructor(bodyInit, options = {}) {
         super();
 
@@ -26,6 +27,11 @@ class Response extends Body {
     }
 }
 
+/**
+ * clone existing Response into new Response
+ *
+ * @returns {Response}
+ */
 Response.prototype.clone = function() {
     return new Response(this._bodyInit, {
         headers: new Headers(this.headers),
@@ -35,6 +41,11 @@ Response.prototype.clone = function() {
     });
 };
 
+/**
+ * create error for Response
+ *
+ * @returns {Response}
+ */
 Response.prototype.error = function() {
     let response = new Response(null, {
         status: 0,
@@ -46,6 +57,13 @@ Response.prototype.error = function() {
     return response;
 };
 
+/**
+ * creates new Response based on status
+ *
+ * @param {string} url
+ * @param {number} status
+ * @returns {Response}
+ */
 Response.prototype.redirect = function(url, status) {
     if (!~REDIRECT_STATUSES.indexOf(status)) {
         throw new RangeError('Invalid status code');

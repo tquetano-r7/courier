@@ -1,5 +1,3 @@
-
-
 import Body from './Body';
 import Headers from './Headers';
 import {
@@ -8,6 +6,14 @@ import {
 } from './utils';
 
 class Request extends Body {
+    /**
+     * creates new Request object based on input passed
+     * if input is a Request itself, then use the Request input, else use the options passed
+     * with defaults
+     *
+     * @param {Request|string} input
+     * @param {Object} options
+     */
     constructor(input, options = {}) {
         super();
 
@@ -57,6 +63,11 @@ class Request extends Body {
     }
 }
 
+/**
+ * clones existing Request into a new Request
+ *
+ * @returns {Request}
+ */
 Request.prototype.clone = function() {
     return new Request(this);
 };

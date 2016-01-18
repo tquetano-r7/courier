@@ -1,6 +1,20 @@
 
 
-import courier from '../src/index';
+import courier, {
+    setCourierDefaults
+} from '../src/index';
+
+const defaults = {
+    headers: {
+        'CSRFToken': 'blah'
+    }
+};
+
+setCourierDefaults(defaults);
+
+/**
+ * @todo create various fake apis to do actual testing
+ */
 
 const request = courier();
 
@@ -10,7 +24,8 @@ request
     .query('test', 'me')
     .query({
         another: 'test',
-        to: 'run'
+        to: 'run',
+        Test: 'CAPITALS'
     })
     .send((data, error, response) => {
         console.log(data);

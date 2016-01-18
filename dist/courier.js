@@ -66,19 +66,48 @@ return /******/ (function(modules) { // webpackBootstrap
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
+	exports.setCourierDefaults = undefined;
 	
 	var _Courier = __webpack_require__(2);
 	
 	var _Courier2 = _interopRequireDefault(_Courier);
 	
+	var _utils = __webpack_require__(4);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	var createCourier = function createCourier() {
-	    return new _Courier2.default();
+	/**
+	 * creates new Courier object for request
+	 *
+	 * @returns {Courier}
+	 */
+	
+	var defaults = undefined;
+	
+	var coalesceObject = function coalesceObject(obj) {
+	    return obj || {};
+	};
+	
+	var createCourier = function createCourier(options) {
+	    var newOptions = undefined;
+	
+	    if ((0, _utils.isObject)(options) || (0, _utils.isObject)(defaults)) {
+	        options = coalesceObject(options);
+	        defaults = coalesceObject(defaults);
+	
+	        newOptions = Object.assign(options, defaults);
+	    }
+	
+	    return new _Courier2.default(newOptions);
+	};
+	
+	var setCourierDefaults = exports.setCourierDefaults = function setCourierDefaults() {
+	    var newDefaults = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+	
+	    defaults = Object.assign(defaults || {}, newDefaults);
 	};
 	
 	exports.default = createCourier;
-	module.exports = exports['default'];
 
 /***/ },
 /* 2 */
@@ -116,21 +145,33 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
+	/**
+	 * default options for Courier
+	 */
 	var DEFAULT_COURIER_OPTIONS = {
 	    cache: 'default',
 	    credentials: 'omit',
+	    data: null,
 	    dataType: 'json',
 	    headers: new _Headers2.default(),
 	    method: 'GET',
 	    mode: 'no-cors',
 	    password: null,
+	    queryStrings: [],
 	    referrer: null,
 	    type: 'json',
 	    url: null,
 	    username: null
 	};
 	
-	var fetch = function fetch(input, init) {
+	/**
+	 * performs the XHR request
+	 *
+	 * @param {Request|string} input
+	 * @param {Object} init
+	 * @returns {Promise}
+	 */
+	var performRequest = function performRequest(input, init) {
 	    return new Promise(function (resolve, reject) {
 	        var request = (0, _utils.isPrototypeOfDataType)(input, _Request2.default) && !init ? input : new _Request2.default(input, init);
 	
@@ -184,6 +225,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    });
 	};
 	
+	/**
+	 * gets headers from XHR and converts them into Headers
+	 *
+	 * @param {Object} xhr
+	 * @returns {Headers}
+	 */
 	var headers = function headers(xhr) {
 	    var pairs = xhr.getAllResponseHeaders().trim().split('\n');
 	
@@ -201,38 +248,81 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 	
 	var Courier = function () {
+	    /**
+	     * sets up parameters for Courier request
+	     *
+	     * @param {Object} options
+	     * @returns {Courier}
+	     */
+	
 	    function Courier() {
-	        var options = arguments.length <= 0 || arguments[0] === undefined ? DEFAULT_COURIER_OPTIONS : arguments[0];
+	        var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 	
 	        _classCallCheck(this, Courier);
 	
-	        this._cache = options.cache;
-	        this._data = null;
-	        this._dataType = options.dataType;
-	        this._credentials = options.credentials;
-	        this._headers = options.headers;
-	        this._method = options.method;
-	        this._mode = options.mode;
-	        this._queryStrings = [];
-	        this._type = options.type;
-	        this._url = options.url;
+	        var thisOptions = Object.assign(DEFAULT_COURIER_OPTIONS, options);
+	
+	        console.log(options);
+	
+	        (0, _utils.setNonEnumerable)(this, '_cache', thisOptions.cache);
+	        (0, _utils.setNonEnumerable)(this, '_data', thisOptions.data);
+	        (0, _utils.setNonEnumerable)(this, '_dataType', thisOptions.dataType);
+	        (0, _utils.setNonEnumerable)(this, '_credentials', thisOptions.credentials);
+	        (0, _utils.setNonEnumerable)(this, '_headers', thisOptions.headers);
+	        (0, _utils.setNonEnumerable)(this, '_method', thisOptions.method);
+	        (0, _utils.setNonEnumerable)(this, '_mode', thisOptions.mode);
+	        (0, _utils.setNonEnumerable)(this, '_password', thisOptions.password);
+	        (0, _utils.setNonEnumerable)(this, '_queryStrings', thisOptions.queryStrings);
+	        (0, _utils.setNonEnumerable)(this, '_type', thisOptions.type);
+	        (0, _utils.setNonEnumerable)(this, '_url', thisOptions.url);
+	        (0, _utils.setNonEnumerable)(this, '_username', thisOptions.username);
 	
 	        return this;
 	    }
+	
+	    /**
+	     * sets basic authentication credentials for request
+	     *
+	     * @param {string} username
+	     * @param {string} password
+	     * @returns {Courier}
+	     */
 	
 	    _createClass(Courier, [{
 	        key: 'auth',
 	        value: function auth(username, password) {
 	            this._password = password;
 	            this._username = username;
+	
+	            return this;
 	        }
+	
+	        /**
+	         * sets cache type for request
+	         * valid types: default, no-store, reload, no-cache, force-cache, only-if-cached
+	         *
+	         * @param {string} cacheType
+	         * @returns {Courier}
+	         */
+	
 	    }, {
 	        key: 'cache',
-	        value: function cache(cacheType) {
+	        value: function cache() {
+	            var cacheType = arguments.length <= 0 || arguments[0] === undefined ? 'default' : arguments[0];
+	
 	            this._cache = cacheType;
 	
 	            return this;
 	        }
+	
+	        /**
+	         * sets credentials type for request
+	         * valid types: omit, same-origin, include
+	         *
+	         * @param {string} creds
+	         * @returns {Courier}
+	         */
+	
 	    }, {
 	        key: 'credentials',
 	        value: function credentials() {
@@ -242,6 +332,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	            return this;
 	        }
+	
+	        /**
+	         * sets data to be passed in request body
+	         * if property is an object, treats all key: value pairs as data to be added
+	         *
+	         * @param {string|Object} property
+	         * @param {*} value
+	         * @returns {Courier}
+	         */
+	
 	    }, {
 	        key: 'data',
 	        value: function data(property, value) {
@@ -265,6 +365,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	            return this;
 	        }
+	
+	        /**
+	         * sets dataFilter function to be executed prior to parsing
+	         * fn will accept one parameter, the unparsed data returned in response
+	         *
+	         * @param {Function} fn
+	         * @returns {Courier}
+	         */
+	
 	    }, {
 	        key: 'dataFilter',
 	        value: function dataFilter(fn) {
@@ -272,11 +381,29 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	            return this;
 	        }
+	
+	        /**
+	         * sets data type of body in request
+	         *
+	         * @param {string} typeString
+	         * @returns {Courier}
+	         */
+	
 	    }, {
 	        key: 'dataType',
 	        value: function dataType(typeString) {
 	            this._dataType = typeString;
+	
+	            return this;
 	        }
+	
+	        /**
+	         * sets method of request to DELETE for url
+	         *
+	         * @param {string} url
+	         * @returns {Courier}
+	         */
+	
 	    }, {
 	        key: 'delete',
 	        value: function _delete(url) {
@@ -285,6 +412,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	            return this;
 	        }
+	
+	        /**
+	         * sets method of request to GET for url
+	         *
+	         * @param {string} url
+	         * @returns {Courier}
+	         */
+	
 	    }, {
 	        key: 'get',
 	        value: function get(url) {
@@ -293,6 +428,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	            return this;
 	        }
+	
+	        /**
+	         * sets method of request to HEAD for url
+	         *
+	         * @param {string} url
+	         * @returns {Courier}
+	         */
+	
 	    }, {
 	        key: 'head',
 	        value: function head(url) {
@@ -301,6 +444,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	            return this;
 	        }
+	
+	        /**
+	         * Sets header for request
+	         * if header is Object, treats each key: value pair as header to be added
+	         *
+	         * @param {string|Object} header
+	         * @param {string} value
+	         * @returns {Courier}
+	         */
+	
 	    }, {
 	        key: 'headers',
 	        value: function headers(header, value) {
@@ -308,19 +461,63 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	            if ((typeof header === 'undefined' ? 'undefined' : _typeof(header)) === 'object' && !!header) {
 	                Object.getOwnPropertyNames(header).forEach(function (name) {
-	                    _this._headers.append(name, header[name]);
+	                    var value = (0, _utils.normalizeValue)(header[name]);
+	
+	                    name = (0, _utils.normalizeValue)(name);
+	
+	                    _this._headers.append(name, value);
 	                });
 	            } else {
+	                header = (0, _utils.normalizeValue)(header);
+	                value = (0, _utils.normalizeValue)(value);
+	
 	                this._headers.append(header, value);
 	            }
 	
 	            return this;
 	        }
+	
+	        /**
+	         * sets mode of request
+	         * valid values: same-origin, no-cors, cors
+	         *
+	         * @param {string}modeString
+	         * @returns {Courier}
+	         */
+	
 	    }, {
 	        key: 'mode',
-	        value: function mode(modeString) {
+	        value: function mode() {
+	            var modeString = arguments.length <= 0 || arguments[0] === undefined ? 'same-origin' : arguments[0];
+	
 	            this._mode = modeString;
+	
+	            return this;
 	        }
+	
+	        /**
+	         * sets method of request to OPTIONS for url
+	         *
+	         * @param {string} url
+	         * @returns {Courier}
+	         */
+	
+	    }, {
+	        key: 'options',
+	        value: function options(url) {
+	            this._method = 'OPTIONS';
+	            this._url = url;
+	
+	            return this;
+	        }
+	
+	        /**
+	         * sets method of request to PATCH for url
+	         *
+	         * @param {string} url
+	         * @returns {Courier}
+	         */
+	
 	    }, {
 	        key: 'patch',
 	        value: function patch(url) {
@@ -329,6 +526,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	            return this;
 	        }
+	
+	        /**
+	         * sets method of request to POST for url
+	         *
+	         * @param {string} url
+	         * @returns {Courier}
+	         */
+	
 	    }, {
 	        key: 'post',
 	        value: function post(url) {
@@ -337,6 +542,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	            return this;
 	        }
+	
+	        /**
+	         * sets method of request to PUT for url
+	         *
+	         * @param {string} url
+	         * @returns {Courier}
+	         */
+	
 	    }, {
 	        key: 'put',
 	        value: function put(url) {
@@ -345,6 +558,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	            return this;
 	        }
+	
+	        /**
+	         * sets querystrings to be appended to URL on request
+	         * if property is an object, treats each key: value pair as a querystring to be added
+	         * 
+	         * @param {string|Object} property
+	         * @param {string|number} value
+	         * @returns {Courier}
+	         */
+	
 	    }, {
 	        key: 'query',
 	        value: function query(property, value) {
@@ -352,14 +575,29 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	            if ((typeof property === 'undefined' ? 'undefined' : _typeof(property)) === 'object' && !!property) {
 	                Object.getOwnPropertyNames(property).forEach(function (name) {
-	                    _this2._queryStrings.push(name + '=' + property[name]);
+	                    var value = (0, _utils.normalizeValue)(property[name]);
+	
+	                    name = (0, _utils.normalizeValue)(name);
+	
+	                    _this2._queryStrings.push(name + '=' + value);
 	                });
 	            } else {
+	                property = (0, _utils.normalizeValue)(property);
+	                value = (0, _utils.normalizeValue)(value);
+	
 	                this._queryStrings.push(property + '=' + value);
 	            }
 	
 	            return this;
 	        }
+	
+	        /**
+	         * performs the request, executing callback passed to it upon completion
+	         * callback receives three parameters: data, error, and the full response
+	         * 
+	         * @param {Function} callback
+	         */
+	
 	    }, {
 	        key: 'send',
 	        value: function send(callback) {
@@ -411,6 +649,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	                this._url = this._url.slice(0, -1);
 	            }
 	
+	            console.log(this._headers);
+	
 	            var requestInit = {
 	                body: data ? new _Body2.default(data) : null,
 	                cache: this._cache,
@@ -427,7 +667,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var error = null;
 	            var rawResponse = undefined;
 	
-	            fetch(request, requestInit).then(function (response) {
+	            performRequest(request, requestInit).then(function (response) {
 	                rawResponse = response;
 	
 	                if (!response.ok) {
@@ -457,9 +697,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	                });
 	            });
 	        }
+	
+	        /**
+	         * sets the type of response expected
+	         * valid values: arraybuffer, blob, json
+	         * if other values are passed, response is parsed as text
+	         *
+	         * @param {string} typeString
+	         * @returns {Courier}
+	         */
+	
 	    }, {
 	        key: 'type',
-	        value: function type(typeString) {
+	        value: function type() {
+	            var typeString = arguments.length <= 0 || arguments[0] === undefined ? 'json' : arguments[0];
+	
 	            this._type = typeString;
 	
 	            return this;
@@ -486,47 +738,54 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
-	var isFunction = function isFunction(fn) {
-	    return Object.prototype.toString.call(fn) === '[object Function]' || typeof fn === 'function';
+	/**
+	 * creates new body, either for Request or Response
+	 *
+	 * @param {string|Blob|FormData} body
+	 */
+	var _initBody = function _initBody(body) {
+	    (0, _utils.setNonEnumerable)(this, '_bodyInit', body);
+	
+	    if (typeof body === 'string') {
+	        (0, _utils.setNonEnumerable)(this, '_bodyText', body);
+	    } else if (_utils.support.blob && (0, _utils.isPrototypeOfDataType)(body, Blob)) {
+	        (0, _utils.setNonEnumerable)(this, '_bodyBlob', body);
+	    } else if (_utils.support.formData && (0, _utils.isPrototypeOfDataType)(body, FormData)) {
+	        (0, _utils.setNonEnumerable)(this, '_bodyFormData', body);
+	    } else if (!body) {
+	        (0, _utils.setNonEnumerable)(this, '_bodyText', '');
+	    } else if (_utils.support.arrayBuffer && (0, _utils.isPrototypeOfDataType)(body, ArrayBuffer)) {
+	        // Only support ArrayBuffers for POST method.
+	        // Receiving ArrayBuffers happens via Blobs, instead.
+	    } else {
+	            throw new TypeError('Unsupported BodyInit type');
+	        }
 	};
 	
-	var setHidden = function setHidden(object, property, value) {
-	    Object.defineProperty(object, property, {
-	        configurable: true,
-	        enumerable: false,
-	        value: value,
-	        writable: true
-	    });
-	};
-	
-	var Body = function Body() {
+	var Body =
+	/**
+	 * creates new Body object, used for both requests and responses
+	 *
+	 * @returns {Body}
+	 */
+	function Body() {
 	    _classCallCheck(this, Body);
 	
 	    this.bodyUsed = false;
 	
-	    setHidden(this, '_initBody', function (body) {
-	        setHidden(this, '_bodyInit', body);
-	
-	        if (typeof body === 'string') {
-	            setHidden(this, '_bodyText', body);
-	        } else if (_utils.support.blob && (0, _utils.isPrototypeOfDataType)(body, Blob)) {
-	            setHidden(this, '_bodyBlob', body);
-	        } else if (_utils.support.formData && (0, _utils.isPrototypeOfDataType)(body, FormData)) {
-	            setHidden(this, '_bodyFormData', body);
-	        } else if (!body) {
-	            setHidden(this, '_bodyText', '');
-	        } else if (_utils.support.arrayBuffer && (0, _utils.isPrototypeOfDataType)(body, ArrayBuffer)) {
-	            // Only support ArrayBuffers for POST method.
-	            // Receiving ArrayBuffers happens via Blobs, instead.
-	        } else {
-	                throw new TypeError('Unsupported BodyInit type');
-	            }
-	    });
+	    (0, _utils.setNonEnumerable)(this, '_initBody', _initBody);
 	
 	    return this;
 	};
 	
 	if (_utils.support.blob) {
+	    /**
+	     * parses blob and returns promise containing data of parsed blob
+	     * if dataFilter is provided in request then returns callback of dataFilter
+	     *
+	     * @param {Function} dataFilter
+	     * @returns {Promise}
+	     */
 	    Body.prototype.blob = function (dataFilter) {
 	        var rejected = (0, _utils.consumed)(this);
 	
@@ -537,7 +796,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (this._bodyBlob) {
 	            var bodyBlobPromise = Promise.resolve(this._bodyBlob);
 	
-	            if (isFunction(dataFilter)) {
+	            if ((0, _utils.isFunction)(dataFilter)) {
 	                return bodyBlobPromise.then(dataFilter);
 	            }
 	
@@ -545,7 +804,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        } else if (this._bodyFormData) {
 	            throw new Error('could not read FormData body as blob');
 	        } else {
-	            if (isFunction(dataFilter)) {
+	            if ((0, _utils.isFunction)(dataFilter)) {
 	                this._bodyText = dataFilter(this._bodyText);
 	            }
 	
@@ -553,10 +812,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	    };
 	
+	    /**
+	     * parses arraybuffer and returns promise containing data of parsed arraybuffer
+	     * if dataFilter is provided in request then returns callback of dataFilter
+	     *
+	     * @param {Function} dataFilter
+	     * @returns {Promise}
+	     */
 	    Body.prototype.arrayBuffer = function (dataFilter) {
 	        return this.blob(dataFilter).then(_utils.readBlobAsArrayBuffer);
 	    };
 	
+	    /**
+	     * parses text and returns promise containing data of parsed text
+	     * if dataFilter is provided in request then returns callback of dataFilter
+	     *
+	     * @param {Function} dataFilter
+	     * @returns {Promise}
+	     */
 	    Body.prototype.text = function (dataFilter) {
 	        var rejected = (0, _utils.consumed)(this);
 	
@@ -567,7 +840,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        if (this._bodyBlob) {
 	            var blobText = (0, _utils.readBlobAsText)(this._bodyBlob);
 	
-	            if (isFunction(dataFilter)) {
+	            if ((0, _utils.isFunction)(dataFilter)) {
 	                return blobText.then(dataFilter);
 	            }
 	
@@ -575,7 +848,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        } else if (this._bodyFormData) {
 	            throw new Error('could not read FormData body as text');
 	        } else {
-	            if (isFunction(dataFilter)) {
+	            if ((0, _utils.isFunction)(dataFilter)) {
 	                this._bodyText = dataFilter(this._bodyText);
 	            }
 	
@@ -583,6 +856,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	    };
 	} else {
+	    /**
+	     * parses text and returns promise containing data of parsed text
+	     * if dataFilter is provided in request then returns callback of dataFilter
+	     *
+	     * @param {Function} dataFilter
+	     * @returns {Promise}
+	     */
 	    Body.prototype.text = function (dataFilter) {
 	        var rejected = (0, _utils.consumed)(this);
 	
@@ -590,7 +870,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return rejected;
 	        }
 	
-	        if (isFunction(dataFilter)) {
+	        if ((0, _utils.isFunction)(dataFilter)) {
 	            this._bodyText = dataFilter(this._bodyText);
 	        }
 	
@@ -598,12 +878,26 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	}
 	
+	/**
+	 * parses formData and returns promise containing data of parsed formData
+	 * if dataFilter is provided in request then returns callback of dataFilter
+	 *
+	 * @param {Function} dataFilter
+	 * @returns {Promise}
+	 */
 	if (_utils.support.formData) {
 	    Body.prototype.formData = function (dataFilter) {
 	        return this.text(dataFilter).then(_utils.decode);
 	    };
 	}
 	
+	/**
+	 * parses json and returns promise containing data of parsed json
+	 * if dataFilter is provided in request then returns callback of dataFilter
+	 *
+	 * @param {Function} dataFilter
+	 * @returns {Promise}
+	 */
 	Body.prototype.json = function (dataFilter) {
 	    return this.text(dataFilter).then(JSON.parse);
 	};
@@ -617,12 +911,23 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 	
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+	
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	
+	/**
+	 * valid request methods
+	 */
 	var HTTP_METHODS = ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'POST', 'PUT'];
 	
+	var toString = Object.prototype.toString;
+	
+	/**
+	 * determines if Blob is supported and can be created
+	 *
+	 * @returns {boolean}
+	 */
 	var canCreateNewBlob = exports.canCreateNewBlob = function canCreateNewBlob() {
 	    try {
 	        new Blob();
@@ -633,6 +938,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	};
 	
+	/**
+	 * determines if body has already been read, and if so returns a rejected promise
+	 *
+	 * @param {*} body
+	 * @returns {Promise|undefined}
+	 */
 	var consumed = exports.consumed = function consumed(body) {
 	    if (body.bodyUsed) {
 	        return Promise.reject(new TypeError('Already read'));
@@ -641,6 +952,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    body.bodyUsed = true;
 	};
 	
+	/**
+	 * translates the body returned into proper FormData
+	 *
+	 * @param {*}body
+	 * @returns {FormData}
+	 */
 	var decode = exports.decode = function decode(body) {
 	    var form = new FormData();
 	
@@ -655,6 +972,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return form;
 	};
 	
+	/**
+	 * reads the result and returns a Promise either rejected or resolved based on results
+	 *
+	 * @param {FileReader} reader
+	 * @returns {Promise}
+	 */
 	var fileReaderReady = exports.fileReaderReady = function fileReaderReady(reader) {
 	    return new Promise(function (resolve, reject) {
 	        reader.onload = function () {
@@ -667,36 +990,95 @@ return /******/ (function(modules) { // webpackBootstrap
 	    });
 	};
 	
+	/**
+	 * determines if fn passed is of type Function
+	 *
+	 * @param {Function} fn
+	 * @returns {boolean}
+	 */
+	var isFunction = exports.isFunction = function isFunction(fn) {
+	    return toString.call(fn) === '[object Function]' || typeof fn === 'function';
+	};
+	
+	/**
+	 * determines if obj passed is of type Object
+	 *
+	 * @param {*} obj
+	 * @returns {boolean}
+	 */
+	var isObject = exports.isObject = function isObject(obj) {
+	    return (typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) === 'object' && !!obj;
+	};
+	
+	/**
+	 * determines if the prototype of the DataType is the same type of prototype as the body
+	 *
+	 * @param {*} body
+	 * @param {*} DataType
+	 * @returns {boolean}
+	 */
 	var isPrototypeOfDataType = exports.isPrototypeOfDataType = function isPrototypeOfDataType(body, DataType) {
 	    return DataType.prototype.isPrototypeOf(body);
 	};
 	
+	/**
+	 * determines if the prototype of the obj is of type String
+	 *
+	 * @param {*} obj
+	 * @returns {boolean}
+	 */
+	var isString = exports.isString = function isString(obj) {
+	    return toString.call(obj) === '[object String]';
+	};
+	
+	/**
+	 * returns capitalized method if it exists in HTTP_METHODS, else returns what is passed to it
+	 *
+	 * @param {string} method
+	 * @returns {string}
+	 */
 	var normalizeMethod = exports.normalizeMethod = function normalizeMethod(method) {
-	    var upCased = method.toUpperCase();
+	    var upCased = (isString(method) ? method : String(method)).toUpperCase();
 	
 	    return !! ~HTTP_METHODS.indexOf(upCased) ? upCased : method;
 	};
 	
+	/**
+	 * returns lowercase string version of name passed to it
+	 *
+	 * @param {*} name
+	 * @returns {string}
+	 */
 	var normalizeName = exports.normalizeName = function normalizeName(name) {
-	    if (typeof name !== 'string') {
-	        name = String(name);
-	    }
+	    name = normalizeValue(name);
 	
 	    if (/[^a-z0-9\-#$%&'*+.\^_`|~]/i.test(name)) {
 	        throw new TypeError('Invalid character in header field name');
 	    }
 	
-	    return name.toLowerCase();
+	    return name;
 	};
 	
+	/**
+	 * returns string value of value passed to it
+	 *
+	 * @param {*}value
+	 * @returns {string}
+	 */
 	var normalizeValue = exports.normalizeValue = function normalizeValue(value) {
-	    if (typeof value !== 'string') {
+	    if (!isString(value)) {
 	        value = String(value);
 	    }
 	
 	    return value;
 	};
 	
+	/**
+	 * converts blob passed to arraybuffer and returns Promise
+	 *
+	 * @param {Blob} blob
+	 * @returns {Promise}
+	 */
 	var readBlobAsArrayBuffer = exports.readBlobAsArrayBuffer = function readBlobAsArrayBuffer(blob) {
 	    var reader = new FileReader();
 	
@@ -705,6 +1087,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return fileReaderReady(reader);
 	};
 	
+	/**
+	 * converts blob passed to text and returns Promise
+	 *
+	 * @param {Blob} blob
+	 * @returns {Promise}
+	 */
 	var readBlobAsText = exports.readBlobAsText = function readBlobAsText(blob) {
 	    var reader = new FileReader();
 	
@@ -713,12 +1101,37 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return fileReaderReady(reader);
 	};
 	
+	/**
+	 * sets property of object to be non-enumerable
+	 *
+	 * @param {Object} object
+	 * @param {string} property
+	 * @param {*} value
+	 */
+	var setNonEnumerable = exports.setNonEnumerable = function setNonEnumerable(object, property, value) {
+	    Object.defineProperty(object, property, {
+	        configurable: true,
+	        enumerable: false,
+	        value: value,
+	        writable: true
+	    });
+	};
+	
+	/**
+	 * support booleans for ArrayBuffer, Blob, and FormData
+	 */
 	var support = exports.support = {
 	    arrayBuffer: 'ArrayBuffer' in window,
 	    blob: 'FileReader' in window && 'Blob' in window && canCreateNewBlob(),
 	    formData: 'FormData' in window
 	};
 	
+	/**
+	 * returns responseURL of XHR
+	 *
+	 * @param {Object} xhr
+	 * @returns {string}
+	 */
 	var xhrResponseURL = exports.xhrResponseURL = function xhrResponseURL(xhr) {
 	    if ('responseURL' in xhr) {
 	        return xhr.responseURL;
@@ -735,12 +1148,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	    consumed: consumed,
 	    decode: decode,
 	    fileReaderReady: fileReaderReady,
+	    isFunction: isFunction,
+	    isObject: isObject,
 	    isPrototypeOfDataType: isPrototypeOfDataType,
+	    isString: isString,
 	    normalizeMethod: normalizeMethod,
 	    normalizeName: normalizeName,
 	    normalizeValue: normalizeValue,
 	    readBlobAsArrayBuffer: readBlobAsArrayBuffer,
 	    readBlobAsText: readBlobAsText,
+	    setNonEnumerable: setNonEnumerable,
 	    support: support,
 	    xhrResponseURL: xhrResponseURL
 	};
@@ -762,6 +1179,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
 	var Headers = function () {
+	    /**
+	     * sets headers map based on headers passed
+	     *
+	     * @param {Headers|Object} headers
+	     */
+	
 	    function Headers(headers) {
 	        var _this = this;
 	
@@ -780,6 +1203,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	    }
 	
+	    /**
+	     *
+	     *
+	     * @param {string} name
+	     * @param {*} value
+	     */
+	
 	    _createClass(Headers, [{
 	        key: 'append',
 	        value: function append(name, value) {
@@ -796,6 +1226,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	            list.push(value);
 	        }
+	
+	        /**
+	         * removes header from map
+	         *
+	         * @param {string} name
+	         */
+	
 	    }, {
 	        key: 'delete',
 	        value: function _delete(name) {
@@ -803,9 +1240,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	            delete this.map[name];
 	        }
+	
+	        /**
+	         * loops over map and executes callback function
+	         *
+	         * @param {Function} callback
+	         */
+	
 	    }, {
 	        key: 'forEach',
-	        value: function forEach(callback /*, thisArg*/) {
+	        value: function forEach(callback) {
 	            var _this2 = this;
 	
 	            Object.getOwnPropertyNames(this.map).forEach(function (name) {
@@ -813,10 +1257,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	                map.forEach(function (value) {
 	                    callback.call(_this2, value, name, map);
-	                    //callback.call(thisArg, value, name, this);
-	                } /*, this*/);
-	            } /*, this*/);
+	                });
+	            });
 	        }
+	
+	        /**
+	         * gets specific header value in map
+	         *
+	         * @param {string} name
+	         * @returns {*}
+	         */
+	
 	    }, {
 	        key: 'get',
 	        value: function get(name) {
@@ -826,6 +1277,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	            return values ? values[0] : null;
 	        }
+	
+	        /**
+	         * gets specific header array in map
+	         *
+	         * @param {string} name
+	         * @returns {Array}
+	         */
+	
 	    }, {
 	        key: 'getAll',
 	        value: function getAll(name) {
@@ -833,6 +1292,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	            return this.map[name] || [];
 	        }
+	
+	        /**
+	         * determines if the header exists in the map
+	         *
+	         * @param {string} name
+	         * @returns {boolean}
+	         */
+	
 	    }, {
 	        key: 'has',
 	        value: function has(name) {
@@ -840,6 +1307,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	            return this.map.hasOwnProperty(name);
 	        }
+	
+	        /**
+	         * sets specific header in map
+	         *
+	         * @param {string} name
+	         * @param {*} value
+	         */
+	
 	    }, {
 	        key: 'set',
 	        value: function set(name, value) {
@@ -886,6 +1361,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var Request = function (_Body) {
 	    _inherits(Request, _Body);
+	
+	    /**
+	     * creates new Request object based on input passed
+	     * if input is a Request itself, then use the Request input, else use the options passed
+	     * with defaults
+	     *
+	     * @param {Request|string} input
+	     * @param {Object} options
+	     */
 	
 	    function Request(input) {
 	        var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
@@ -943,6 +1427,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return Request;
 	}(_Body3.default);
 	
+	/**
+	 * clones existing Request into a new Request
+	 *
+	 * @returns {Request}
+	 */
+	
 	Request.prototype.clone = function () {
 	    return new Request(this);
 	};
@@ -968,8 +1458,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _Headers2 = _interopRequireDefault(_Headers);
 	
-	__webpack_require__(4);
-	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -982,6 +1470,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var Response = function (_Body) {
 	    _inherits(Response, _Body);
+	
+	    /**
+	     * receives _bodyInit inherited from Body and applies response aspects from it
+	     *
+	     * @param {*} bodyInit
+	     * @param {Object} options
+	     */
 	
 	    function Response(bodyInit) {
 	        var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
@@ -1007,6 +1502,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return Response;
 	}(_Body3.default);
 	
+	/**
+	 * clone existing Response into new Response
+	 *
+	 * @returns {Response}
+	 */
+	
 	Response.prototype.clone = function () {
 	    return new Response(this._bodyInit, {
 	        headers: new _Headers2.default(this.headers),
@@ -1016,6 +1517,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    });
 	};
 	
+	/**
+	 * create error for Response
+	 *
+	 * @returns {Response}
+	 */
 	Response.prototype.error = function () {
 	    var response = new Response(null, {
 	        status: 0,
@@ -1027,6 +1533,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return response;
 	};
 	
+	/**
+	 * creates new Response based on status
+	 *
+	 * @param {string} url
+	 * @param {number} status
+	 * @returns {Response}
+	 */
 	Response.prototype.redirect = function (url, status) {
 	    if (! ~REDIRECT_STATUSES.indexOf(status)) {
 	        throw new RangeError('Invalid status code');

@@ -1,11 +1,14 @@
-
-
 import {
     normalizeName,
     normalizeValue
 } from './utils';
 
 class Headers {
+    /**
+     * sets headers map based on headers passed
+     *
+     * @param {Headers|Object} headers
+     */
     constructor(headers) {
         this.map = {};
 
@@ -20,6 +23,12 @@ class Headers {
         }
     }
 
+    /**
+     *
+     *
+     * @param {string} name
+     * @param {*} value
+     */
     append(name, value) {
         name = normalizeName(name);
         value = normalizeValue(value);
@@ -35,23 +44,38 @@ class Headers {
         list.push(value);
     }
 
+    /**
+     * removes header from map
+     *
+     * @param {string} name
+     */
     delete(name) {
         name = normalizeName(name);
 
         delete this.map[name];
     }
 
-    forEach(callback/*, thisArg*/) {
+    /**
+     * loops over map and executes callback function
+     *
+     * @param {Function} callback
+     */
+    forEach(callback) {
         Object.getOwnPropertyNames(this.map).forEach((name) => {
             const map = this.map[name];
 
             map.forEach((value) => {
                 callback.call(this, value, name, map);
-                //callback.call(thisArg, value, name, this);
-            }/*, this*/);
-        }/*, this*/);
+            });
+        });
     }
 
+    /**
+     * gets specific header value in map
+     *
+     * @param {string} name
+     * @returns {*}
+     */
     get(name) {
         name = normalizeName(name);
 
@@ -60,18 +84,36 @@ class Headers {
         return values ? values[0] : null;
     }
 
+    /**
+     * gets specific header array in map
+     *
+     * @param {string} name
+     * @returns {Array}
+     */
     getAll(name) {
         name = normalizeName(name);
 
         return this.map[name] || [];
     }
 
+    /**
+     * determines if the header exists in the map
+     *
+     * @param {string} name
+     * @returns {boolean}
+     */
     has(name) {
         name = normalizeName(name);
 
         return this.map.hasOwnProperty(name);
     }
 
+    /**
+     * sets specific header in map
+     *
+     * @param {string} name
+     * @param {*} value
+     */
     set(name, value) {
         name = normalizeName(name);
         value = normalizeName(value);
