@@ -32,3 +32,8 @@ request
         console.log(error);
         console.log(response);
     });
+
+fetch('http://jsonplaceholder.typicode.com/photos?test=me&another=test&to=run&Test=CAPITALS')
+    .then((response) => {
+        console.log(response);
+    });

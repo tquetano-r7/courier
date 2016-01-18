@@ -33,11 +33,11 @@ const _initBody = function(body) {
     }
 };
 
-class Body {
+class CourierBody {
     /**
-     * creates new Body object, used for both requests and responses
+     * creates new CourierBody object, used for both requests and responses
      *
-     * @returns {Body}
+     * @returns {CourierBody}
      */
     constructor() {
         this.bodyUsed = false;
@@ -56,7 +56,7 @@ if (support.blob) {
      * @param {Function} dataFilter
      * @returns {Promise}
      */
-    Body.prototype.blob = function(dataFilter) {
+    CourierBody.prototype.blob = function(dataFilter) {
         const rejected = consumed(this);
 
         if (rejected) {
@@ -89,7 +89,7 @@ if (support.blob) {
      * @param {Function} dataFilter
      * @returns {Promise}
      */
-    Body.prototype.arrayBuffer = function(dataFilter) {
+    CourierBody.prototype.arrayBuffer = function(dataFilter) {
         return this.blob(dataFilter).then(readBlobAsArrayBuffer);
     };
 
@@ -100,7 +100,7 @@ if (support.blob) {
      * @param {Function} dataFilter
      * @returns {Promise}
      */
-    Body.prototype.text = function(dataFilter) {
+    CourierBody.prototype.text = function(dataFilter) {
         const rejected = consumed(this);
 
         if (rejected) {
@@ -133,7 +133,7 @@ if (support.blob) {
      * @param {Function} dataFilter
      * @returns {Promise}
      */
-    Body.prototype.text = function(dataFilter) {
+    CourierBody.prototype.text = function(dataFilter) {
         const rejected = consumed(this);
 
         if (rejected) {
@@ -156,7 +156,7 @@ if (support.blob) {
  * @returns {Promise}
  */
 if (support.formData) {
-    Body.prototype.formData = function(dataFilter) {
+    CourierBody.prototype.formData = function(dataFilter) {
         return this.text(dataFilter).then(decode);
     };
 }
@@ -168,8 +168,8 @@ if (support.formData) {
  * @param {Function} dataFilter
  * @returns {Promise}
  */
-Body.prototype.json = function(dataFilter) {
+CourierBody.prototype.json = function(dataFilter) {
     return this.text(dataFilter).then(JSON.parse);
 };
 
-export default Body;
+export default CourierBody;

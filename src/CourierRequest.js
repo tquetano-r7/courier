@@ -1,17 +1,17 @@
-import Body from './Body';
-import Headers from './Headers';
+import CourierBody from './CourierBody';
+import CourierHeaders from './CourierHeaders';
 import {
     isPrototypeOfDataType,
     normalizeMethod
 } from './utils';
 
-class Request extends Body {
+class CourierRequest extends CourierBody {
     /**
-     * creates new Request object based on input passed
-     * if input is a Request itself, then use the Request input, else use the options passed
+     * creates new CourierRequest object based on input passed
+     * if input is a CourierRequest itself, then use the CourierRequest input, else use the options passed
      * with defaults
      *
-     * @param {Request|string} input
+     * @param {CourierRequest|string} input
      * @param {Object} options
      */
     constructor(input, options = {}) {
@@ -19,7 +19,7 @@ class Request extends Body {
 
         let body = options.body;
 
-        if (isPrototypeOfDataType(input, Request)) {
+        if (isPrototypeOfDataType(input, CourierRequest)) {
             if (input.bodyUsed) {
                 throw new TypeError('Already read');
             }
@@ -28,7 +28,7 @@ class Request extends Body {
             this.credentials = input.credentials;
 
             if (!options.headers) {
-                this.headers = new Headers(input.headers);
+                this.headers = new CourierHeaders(input.headers);
             }
 
             this.method = input.method;
@@ -48,7 +48,7 @@ class Request extends Body {
         this.username = options.username || null;
 
         if (options.headers || !this.headers) {
-            this.headers = new Headers(options.headers);
+            this.headers = new CourierHeaders(options.headers);
         }
 
         this.method = normalizeMethod(options.method || this.method || 'GET');
@@ -64,12 +64,12 @@ class Request extends Body {
 }
 
 /**
- * clones existing Request into a new Request
+ * clones existing CourierRequest into a new CourierRequest
  *
- * @returns {Request}
+ * @returns {CourierRequest}
  */
-Request.prototype.clone = function() {
-    return new Request(this);
+CourierRequest.prototype.clone = function() {
+    return new CourierRequest(this);
 };
 
-export default Request;
+export default CourierRequest;

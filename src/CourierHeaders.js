@@ -3,16 +3,16 @@ import {
     normalizeValue
 } from './utils';
 
-class Headers {
+class CourierHeaders {
     /**
      * sets headers map based on headers passed
      *
-     * @param {Headers|Object} headers
+     * @param {CourierHeaders|Object} headers
      */
     constructor(headers) {
         this.map = {};
 
-        if (headers instanceof Headers) {
+        if (headers instanceof CourierHeaders) {
             headers.forEach((value, name) => {
                 this.append(name, value);
             });
@@ -122,4 +122,4 @@ class Headers {
     }
 }
 
-export default Headers;
+export default CourierHeaders;

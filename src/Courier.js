@@ -1,8 +1,9 @@
-import Body from './Body';
-import Headers from './Headers';
-import Request from './Request';
-import Response from './Response';
+import CourierBody from './CourierBody';
+import CourierHeaders from './CourierHeaders';
+import CourierRequest from './CourierRequest';
+import CourierResponse from './CourierResponse';
 import {
+    getHostname,
     isPrototypeOfDataType,
     normalizeValue,
     readBlobAsText,
@@ -19,9 +20,8 @@ const DEFAULT_COURIER_OPTIONS = {
     credentials: 'omit',
     data: null,
     dataType: 'json',
-    headers: new Headers(),
+    headers: new CourierHeaders(),
     method: 'GET',
-    mode: 'no-cors',
     password: null,
     queryStrings: [],
     referrer: null,
@@ -33,13 +33,13 @@ const DEFAULT_COURIER_OPTIONS = {
 /**
  * performs the XHR request
  *
- * @param {Request|string} input
+ * @param {CourierRequest|string} input
  * @param {Object} init
  * @returns {Promise}
  */
 const performRequest = (input, init) => {
     return new Promise((resolve, reject) => {
-        const request = isPrototypeOfDataType(input, Request) && !init ? input : new Request(input, init);
+        const request = isPrototypeOfDataType(input, CourierRequest) && !init ? input : new CourierRequest(input, init);
 
         let xhr = new XMLHttpRequest();
 
@@ -53,14 +53,16 @@ const performRequest = (input, init) => {
             }
 
             const options = {
+                cache: init.cache,
                 headers: headers(xhr),
+                mode: init.mode,
                 status,
                 statusText: xhr.statusText,
                 url: xhrResponseURL(xhr)
             };
             const body = 'response' in xhr ? xhr.response : xhr.responseText;
 
-            resolve(new Response(body, options));
+            resolve(new CourierResponse(body, options));
         };
 
         xhr.onerror = () => {
@@ -92,15 +94,15 @@ const performRequest = (input, init) => {
 };
 
 /**
- * gets headers from XHR and converts them into Headers
+ * gets headers from XHR and converts them into CourierHeaders
  *
  * @param {Object} xhr
- * @returns {Headers}
+ * @returns {CourierHeaders}
  */
 const headers = (xhr) => {
     const pairs = xhr.getAllResponseHeaders().trim().split('\n');
 
-    let head = new Headers();
+    let head = new CourierHeaders();
 
     pairs.forEach((header) => {
         const split = header.trim().split(':');
@@ -399,7 +401,7 @@ class Courier {
      * @param {Function} callback
      */
     send(callback) {
-        const newHeaders = new Headers(this._headers);
+        const newHeaders = new CourierHeaders(this._headers);
 
         let data;
 
@@ -446,17 +448,17 @@ class Courier {
         }
 
         const requestInit = {
-            body: data ? new Body(data) : null,
+            body: data ? new CourierBody(data) : null,
             cache: this._cache,
             credentials: this._credentials,
             headers: newHeaders,
             method: this._method,
-            mode: this._mode,
+            mode: this._mode || (window.location.hostname === getHostname(this._url) ? 'same-origin' : 'cors'),
             password: this._password,
             username: this._username
         };
 
-        const request = new Request(this._url, requestInit);
+        const request = new CourierRequest(this._url, requestInit);
 
         let error = null;
         let rawResponse;

@@ -72,6 +72,20 @@ export const fileReaderReady = (reader) => {
     });
 };
 
+export const getHostname = (url) => {
+    if (url) {
+        url = normalizeValue(url);
+
+        let a = document.createElement('a');
+
+        a.href = url;
+
+        return a.hostname;
+    }
+
+    return null;
+};
+
 /**
  * determines if fn passed is of type Function
  *
@@ -230,6 +244,7 @@ export default {
     consumed,
     decode,
     fileReaderReady,
+    getHostname,
     isFunction,
     isObject,
     isPrototypeOfDataType,

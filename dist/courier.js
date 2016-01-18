@@ -123,21 +123,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	    value: true
 	});
 	
-	var _Body = __webpack_require__(3);
+	var _CourierBody = __webpack_require__(3);
 	
-	var _Body2 = _interopRequireDefault(_Body);
+	var _CourierBody2 = _interopRequireDefault(_CourierBody);
 	
-	var _Headers = __webpack_require__(5);
+	var _CourierHeaders = __webpack_require__(5);
 	
-	var _Headers2 = _interopRequireDefault(_Headers);
+	var _CourierHeaders2 = _interopRequireDefault(_CourierHeaders);
 	
-	var _Request = __webpack_require__(6);
+	var _CourierRequest = __webpack_require__(6);
 	
-	var _Request2 = _interopRequireDefault(_Request);
+	var _CourierRequest2 = _interopRequireDefault(_CourierRequest);
 	
-	var _Response = __webpack_require__(7);
+	var _CourierResponse = __webpack_require__(7);
 	
-	var _Response2 = _interopRequireDefault(_Response);
+	var _CourierResponse2 = _interopRequireDefault(_CourierResponse);
 	
 	var _utils = __webpack_require__(4);
 	
@@ -153,9 +153,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    credentials: 'omit',
 	    data: null,
 	    dataType: 'json',
-	    headers: new _Headers2.default(),
+	    headers: new _CourierHeaders2.default(),
 	    method: 'GET',
-	    mode: 'no-cors',
 	    password: null,
 	    queryStrings: [],
 	    referrer: null,
@@ -167,13 +166,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	/**
 	 * performs the XHR request
 	 *
-	 * @param {Request|string} input
+	 * @param {CourierRequest|string} input
 	 * @param {Object} init
 	 * @returns {Promise}
 	 */
 	var performRequest = function performRequest(input, init) {
 	    return new Promise(function (resolve, reject) {
-	        var request = (0, _utils.isPrototypeOfDataType)(input, _Request2.default) && !init ? input : new _Request2.default(input, init);
+	        var request = (0, _utils.isPrototypeOfDataType)(input, _CourierRequest2.default) && !init ? input : new _CourierRequest2.default(input, init);
 	
 	        var xhr = new XMLHttpRequest();
 	
@@ -187,14 +186,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	
 	            var options = {
+	                cache: init.cache,
 	                headers: headers(xhr),
+	                mode: init.mode,
 	                status: status,
 	                statusText: xhr.statusText,
 	                url: (0, _utils.xhrResponseURL)(xhr)
 	            };
 	            var body = 'response' in xhr ? xhr.response : xhr.responseText;
 	
-	            resolve(new _Response2.default(body, options));
+	            resolve(new _CourierResponse2.default(body, options));
 	        };
 	
 	        xhr.onerror = function () {
@@ -226,15 +227,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 	
 	/**
-	 * gets headers from XHR and converts them into Headers
+	 * gets headers from XHR and converts them into CourierHeaders
 	 *
 	 * @param {Object} xhr
-	 * @returns {Headers}
+	 * @returns {CourierHeaders}
 	 */
 	var headers = function headers(xhr) {
 	    var pairs = xhr.getAllResponseHeaders().trim().split('\n');
 	
-	    var head = new _Headers2.default();
+	    var head = new _CourierHeaders2.default();
 	
 	    pairs.forEach(function (header) {
 	        var split = header.trim().split(':');
@@ -601,7 +602,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        value: function send(callback) {
 	            var _this3 = this;
 	
-	            var newHeaders = new _Headers2.default(this._headers);
+	            var newHeaders = new _CourierHeaders2.default(this._headers);
 	
 	            var data = undefined;
 	
@@ -648,17 +649,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	
 	            var requestInit = {
-	                body: data ? new _Body2.default(data) : null,
+	                body: data ? new _CourierBody2.default(data) : null,
 	                cache: this._cache,
 	                credentials: this._credentials,
 	                headers: newHeaders,
 	                method: this._method,
-	                mode: this._mode,
+	                mode: this._mode || (window.location.hostname === (0, _utils.getHostname)(this._url) ? 'same-origin' : 'cors'),
 	                password: this._password,
 	                username: this._username
 	            };
 	
-	            var request = new _Request2.default(this._url, requestInit);
+	            var request = new _CourierRequest2.default(this._url, requestInit);
 	
 	            var error = null;
 	            var rawResponse = undefined;
@@ -758,14 +759,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	};
 	
-	var Body =
+	var CourierBody =
 	/**
-	 * creates new Body object, used for both requests and responses
+	 * creates new CourierBody object, used for both requests and responses
 	 *
-	 * @returns {Body}
+	 * @returns {CourierBody}
 	 */
-	function Body() {
-	    _classCallCheck(this, Body);
+	function CourierBody() {
+	    _classCallCheck(this, CourierBody);
 	
 	    this.bodyUsed = false;
 	
@@ -782,7 +783,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @param {Function} dataFilter
 	     * @returns {Promise}
 	     */
-	    Body.prototype.blob = function (dataFilter) {
+	    CourierBody.prototype.blob = function (dataFilter) {
 	        var rejected = (0, _utils.consumed)(this);
 	
 	        if (rejected) {
@@ -815,7 +816,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @param {Function} dataFilter
 	     * @returns {Promise}
 	     */
-	    Body.prototype.arrayBuffer = function (dataFilter) {
+	    CourierBody.prototype.arrayBuffer = function (dataFilter) {
 	        return this.blob(dataFilter).then(_utils.readBlobAsArrayBuffer);
 	    };
 	
@@ -826,7 +827,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @param {Function} dataFilter
 	     * @returns {Promise}
 	     */
-	    Body.prototype.text = function (dataFilter) {
+	    CourierBody.prototype.text = function (dataFilter) {
 	        var rejected = (0, _utils.consumed)(this);
 	
 	        if (rejected) {
@@ -859,7 +860,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @param {Function} dataFilter
 	     * @returns {Promise}
 	     */
-	    Body.prototype.text = function (dataFilter) {
+	    CourierBody.prototype.text = function (dataFilter) {
 	        var rejected = (0, _utils.consumed)(this);
 	
 	        if (rejected) {
@@ -882,7 +883,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @returns {Promise}
 	 */
 	if (_utils.support.formData) {
-	    Body.prototype.formData = function (dataFilter) {
+	    CourierBody.prototype.formData = function (dataFilter) {
 	        return this.text(dataFilter).then(_utils.decode);
 	    };
 	}
@@ -894,11 +895,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {Function} dataFilter
 	 * @returns {Promise}
 	 */
-	Body.prototype.json = function (dataFilter) {
+	CourierBody.prototype.json = function (dataFilter) {
 	    return this.text(dataFilter).then(JSON.parse);
 	};
 	
-	exports.default = Body;
+	exports.default = CourierBody;
 	module.exports = exports['default'];
 
 /***/ },
@@ -984,6 +985,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	            reject(reader.error);
 	        };
 	    });
+	};
+	
+	var getHostname = exports.getHostname = function getHostname(url) {
+	    if (url) {
+	        url = normalizeValue(url);
+	
+	        var a = document.createElement('a');
+	
+	        a.href = url;
+	
+	        return a.hostname;
+	    }
+	
+	    return null;
 	};
 	
 	/**
@@ -1144,6 +1159,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    consumed: consumed,
 	    decode: decode,
 	    fileReaderReady: fileReaderReady,
+	    getHostname: getHostname,
 	    isFunction: isFunction,
 	    isObject: isObject,
 	    isPrototypeOfDataType: isPrototypeOfDataType,
@@ -1174,21 +1190,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
-	var Headers = function () {
+	var CourierHeaders = function () {
 	    /**
 	     * sets headers map based on headers passed
 	     *
-	     * @param {Headers|Object} headers
+	     * @param {CourierHeaders|Object} headers
 	     */
 	
-	    function Headers(headers) {
+	    function CourierHeaders(headers) {
 	        var _this = this;
 	
-	        _classCallCheck(this, Headers);
+	        _classCallCheck(this, CourierHeaders);
 	
 	        this.map = {};
 	
-	        if (headers instanceof Headers) {
+	        if (headers instanceof CourierHeaders) {
 	            headers.forEach(function (value, name) {
 	                _this.append(name, value);
 	            });
@@ -1206,7 +1222,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @param {*} value
 	     */
 	
-	    _createClass(Headers, [{
+	    _createClass(CourierHeaders, [{
 	        key: 'append',
 	        value: function append(name, value) {
 	            name = (0, _utils.normalizeName)(name);
@@ -1321,10 +1337,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	    }]);
 	
-	    return Headers;
+	    return CourierHeaders;
 	}();
 	
-	exports.default = Headers;
+	exports.default = CourierHeaders;
 	module.exports = exports['default'];
 
 /***/ },
@@ -1337,13 +1353,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    value: true
 	});
 	
-	var _Body2 = __webpack_require__(3);
+	var _CourierBody2 = __webpack_require__(3);
 	
-	var _Body3 = _interopRequireDefault(_Body2);
+	var _CourierBody3 = _interopRequireDefault(_CourierBody2);
 	
-	var _Headers = __webpack_require__(5);
+	var _CourierHeaders = __webpack_require__(5);
 	
-	var _Headers2 = _interopRequireDefault(_Headers);
+	var _CourierHeaders2 = _interopRequireDefault(_CourierHeaders);
 	
 	var _utils = __webpack_require__(4);
 	
@@ -1355,28 +1371,28 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
-	var Request = function (_Body) {
-	    _inherits(Request, _Body);
+	var CourierRequest = function (_CourierBody) {
+	    _inherits(CourierRequest, _CourierBody);
 	
 	    /**
-	     * creates new Request object based on input passed
-	     * if input is a Request itself, then use the Request input, else use the options passed
+	     * creates new CourierRequest object based on input passed
+	     * if input is a CourierRequest itself, then use the CourierRequest input, else use the options passed
 	     * with defaults
 	     *
-	     * @param {Request|string} input
+	     * @param {CourierRequest|string} input
 	     * @param {Object} options
 	     */
 	
-	    function Request(input) {
+	    function CourierRequest(input) {
 	        var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 	
-	        _classCallCheck(this, Request);
+	        _classCallCheck(this, CourierRequest);
 	
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Request).call(this));
+	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(CourierRequest).call(this));
 	
 	        var body = options.body;
 	
-	        if ((0, _utils.isPrototypeOfDataType)(input, Request)) {
+	        if ((0, _utils.isPrototypeOfDataType)(input, CourierRequest)) {
 	            if (input.bodyUsed) {
 	                throw new TypeError('Already read');
 	            }
@@ -1385,7 +1401,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            _this.credentials = input.credentials;
 	
 	            if (!options.headers) {
-	                _this.headers = new _Headers2.default(input.headers);
+	                _this.headers = new _CourierHeaders2.default(input.headers);
 	            }
 	
 	            _this.method = input.method;
@@ -1405,7 +1421,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        _this.username = options.username || null;
 	
 	        if (options.headers || !_this.headers) {
-	            _this.headers = new _Headers2.default(options.headers);
+	            _this.headers = new _CourierHeaders2.default(options.headers);
 	        }
 	
 	        _this.method = (0, _utils.normalizeMethod)(options.method || _this.method || 'GET');
@@ -1420,20 +1436,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return _this;
 	    }
 	
-	    return Request;
-	}(_Body3.default);
+	    return CourierRequest;
+	}(_CourierBody3.default);
 	
 	/**
-	 * clones existing Request into a new Request
+	 * clones existing CourierRequest into a new CourierRequest
 	 *
-	 * @returns {Request}
+	 * @returns {CourierRequest}
 	 */
 	
-	Request.prototype.clone = function () {
-	    return new Request(this);
+	CourierRequest.prototype.clone = function () {
+	    return new CourierRequest(this);
 	};
 	
-	exports.default = Request;
+	exports.default = CourierRequest;
 	module.exports = exports['default'];
 
 /***/ },
@@ -1446,13 +1462,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	    value: true
 	});
 	
-	var _Body2 = __webpack_require__(3);
+	var _CourierBody2 = __webpack_require__(3);
 	
-	var _Body3 = _interopRequireDefault(_Body2);
+	var _CourierBody3 = _interopRequireDefault(_CourierBody2);
 	
-	var _Headers = __webpack_require__(5);
+	var _CourierHeaders = __webpack_require__(5);
 	
-	var _Headers2 = _interopRequireDefault(_Headers);
+	var _CourierHeaders2 = _interopRequireDefault(_CourierHeaders);
+	
+	var _utils = __webpack_require__(4);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -1464,8 +1482,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var REDIRECT_STATUSES = [301, 302, 303, 307, 308];
 	
-	var Response = function (_Body) {
-	    _inherits(Response, _Body);
+	var CourierResponse = function (_CourierBody) {
+	    _inherits(CourierResponse, _CourierBody);
 	
 	    /**
 	     * receives _bodyInit inherited from Body and applies response aspects from it
@@ -1474,12 +1492,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @param {Object} options
 	     */
 	
-	    function Response(bodyInit) {
+	    function CourierResponse(bodyInit) {
 	        var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 	
-	        _classCallCheck(this, Response);
+	        _classCallCheck(this, CourierResponse);
 	
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Response).call(this));
+	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(CourierResponse).call(this));
 	
 	        _this._initBody(bodyInit);
 	
@@ -1487,26 +1505,35 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	        var isValidResponse = _this.status >= 200 && _this.status < 300;
 	
+	        if (isValidResponse) {
+	            if (window.location.hostname !== (0, _utils.getHostname)(options.url)) {
+	                _this.type = options.mode === 'no-cors' ? 'opaque' : 'cors';
+	            } else {
+	                _this.type = 'basic';
+	            }
+	        } else {
+	            _this.type = 'error';
+	        }
+	
 	        _this.ok = isValidResponse;
-	        _this.headers = options.headers instanceof _Headers2.default ? options.headers : new _Headers2.default(options.headers);
+	        _this.headers = options.headers instanceof _CourierHeaders2.default ? options.headers : new _CourierHeaders2.default(options.headers);
 	        _this.statusText = options.statusText;
-	        _this.type = isValidResponse ? 'default' : 'error';
 	        _this.url = options.url || '';
 	        return _this;
 	    }
 	
-	    return Response;
-	}(_Body3.default);
+	    return CourierResponse;
+	}(_CourierBody3.default);
 	
 	/**
-	 * clone existing Response into new Response
+	 * clone existing CourierResponse into new CourierResponse
 	 *
-	 * @returns {Response}
+	 * @returns {CourierResponse}
 	 */
 	
-	Response.prototype.clone = function () {
-	    return new Response(this._bodyInit, {
-	        headers: new _Headers2.default(this.headers),
+	CourierResponse.prototype.clone = function () {
+	    return new CourierResponse(this._bodyInit, {
+	        headers: new _CourierHeaders2.default(this.headers),
 	        status: this.status,
 	        statusText: this.statusText,
 	        url: this.url
@@ -1514,12 +1541,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 	
 	/**
-	 * create error for Response
+	 * create error for CourierResponse
 	 *
-	 * @returns {Response}
+	 * @returns {CourierResponse}
 	 */
-	Response.prototype.error = function () {
-	    var response = new Response(null, {
+	CourierResponse.prototype.error = function () {
+	    var response = new CourierResponse(null, {
 	        status: 0,
 	        statusText: ''
 	    });
@@ -1530,18 +1557,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 	
 	/**
-	 * creates new Response based on status
+	 * creates new CourierResponse based on status
 	 *
 	 * @param {string} url
 	 * @param {number} status
-	 * @returns {Response}
+	 * @returns {CourierResponse}
 	 */
-	Response.prototype.redirect = function (url, status) {
+	CourierResponse.prototype.redirect = function (url, status) {
 	    if (! ~REDIRECT_STATUSES.indexOf(status)) {
 	        throw new RangeError('Invalid status code');
 	    }
 	
-	    return new Response(null, {
+	    return new CourierResponse(null, {
 	        headers: {
 	            location: url
 	        },
@@ -1549,7 +1576,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    });
 	};
 	
-	exports.default = Response;
+	exports.default = CourierResponse;
 	module.exports = exports['default'];
 
 /***/ }
