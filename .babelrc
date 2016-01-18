@@ -1,0 +1,17 @@
+{
+    "plugins":[
+        ["typecheck", {
+            "disable": {
+                "development": true,
+                "production": true
+            }
+        }],
+        "syntax-flow",
+        "transform-flow-strip-types",
+        "add-module-exports"
+    ],
+    "presets":[
+        "es2015",
+        "stage-0"
+    ]
+}
