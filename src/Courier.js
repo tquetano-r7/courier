@@ -123,8 +123,6 @@ class Courier {
     constructor(options = {}) {
         const thisOptions = Object.assign(DEFAULT_COURIER_OPTIONS, options);
 
-        console.log(options);
-
         setNonEnumerable(this, '_cache', thisOptions.cache);
         setNonEnumerable(this, '_data', thisOptions.data);
         setNonEnumerable(this, '_dataType', thisOptions.dataType);
@@ -446,8 +444,6 @@ class Courier {
 
             this._url = this._url.slice(0, -1);
         }
-
-        console.log(this._headers);
 
         const requestInit = {
             body: data ? new Body(data) : null,

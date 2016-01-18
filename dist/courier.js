@@ -262,8 +262,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	        var thisOptions = Object.assign(DEFAULT_COURIER_OPTIONS, options);
 	
-	        console.log(options);
-	
 	        (0, _utils.setNonEnumerable)(this, '_cache', thisOptions.cache);
 	        (0, _utils.setNonEnumerable)(this, '_data', thisOptions.data);
 	        (0, _utils.setNonEnumerable)(this, '_dataType', thisOptions.dataType);
@@ -648,8 +646,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	                this._url = this._url.slice(0, -1);
 	            }
-	
-	            console.log(this._headers);
 	
 	            var requestInit = {
 	                body: data ? new _Body2.default(data) : null,
