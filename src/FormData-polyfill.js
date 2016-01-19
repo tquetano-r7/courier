@@ -4,7 +4,7 @@
  * https://gist.github.com/Rob--W/8b5adedd84c0d36aba64
  */
 
-if (!window.FormData) {
+if (!window.FormData || !window.FormData.prototype.append) {
     const ___send$rw = XMLHttpRequest.prototype.send;
 
     let FormData = function() {
