@@ -107,7 +107,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        options = coalesceObject(options);
 	        defaults = coalesceObject(defaults);
 	
-	        newOptions = Object.assign({}, defaults, options);
+	        newOptions = (0, _utils.deepExtend)({}, defaults, options);
 	    }
 	
 	    return new _Courier2.default(newOptions);
@@ -513,6 +513,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    method: 'GET',
 	    password: null,
 	    queryStrings: [],
+	    plugins: [],
 	    referrer: null,
 	    type: 'json',
 	    url: null,
@@ -617,7 +618,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	        _classCallCheck(this, Courier);
 	
-	        var thisOptions = Object.assign(DEFAULT_COURIER_OPTIONS, options);
+	        var thisOptions = (0, _utils.deepExtend)({}, DEFAULT_COURIER_OPTIONS, options);
 	
 	        (0, _utils.setNonEnumerable)(this, '_cache', thisOptions.cache);
 	        (0, _utils.setNonEnumerable)(this, '_data', thisOptions.data);
@@ -627,6 +628,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        (0, _utils.setNonEnumerable)(this, '_method', thisOptions.method);
 	        (0, _utils.setNonEnumerable)(this, '_mode', thisOptions.mode);
 	        (0, _utils.setNonEnumerable)(this, '_password', thisOptions.password);
+	        (0, _utils.setNonEnumerable)(this, '_plugins', thisOptions.plugins);
 	        (0, _utils.setNonEnumerable)(this, '_queryStrings', thisOptions.queryStrings);
 	        (0, _utils.setNonEnumerable)(this, '_type', thisOptions.type);
 	        (0, _utils.setNonEnumerable)(this, '_url', thisOptions.url);
@@ -1012,10 +1014,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	                method: this._method,
 	                mode: this._mode || (window.location.hostname === (0, _utils.getHostname)(this._url) ? 'same-origin' : 'cors'),
 	                password: this._password,
+	                url: this._url,
 	                username: this._username
 	            };
 	
-	            var request = new _CourierRequest2.default(this._url, requestInit);
+	            this._plugins.forEach(function (plugin) {
+	                requestInit = plugin(requestInit) || requestInit;
+	            });
+	
+	            var finalURL = requestInit.url;
+	
+	            var request = new _CourierRequest2.default(finalURL, requestInit);
 	
 	            var error = null;
 	            var rawResponse = undefined;
@@ -1066,6 +1075,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var typeString = arguments.length <= 0 || arguments[0] === undefined ? 'json' : arguments[0];
 	
 	            this._type = typeString;
+	
+	            return this;
+	        }
+	
+	        /**
+	         * adds function plugins to use as part of the request
+	         *
+	         * @param {Function} fn
+	         * @returns {Courier}
+	         */
+	
+	    }, {
+	        key: 'use',
+	        value: function use(fn) {
+	            this._plugins.push(fn);
 	
 	            return this;
 	        }
@@ -1325,6 +1349,42 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return form;
 	};
 	
+	var deepExtend = exports.deepExtend = function deepExtend() {
+	    for (var _len = arguments.length, objects = Array(_len), _key = 0; _key < _len; _key++) {
+	        objects[_key] = arguments[_key];
+	    }
+	
+	    var dest = objects.shift();
+	
+	    objects.forEach(function (object) {
+	        for (var key in object) {
+	            var value = object[key];
+	
+	            if (isArray(value)) {
+	                if (dest[key] === void 0) {
+	                    dest[key] = [];
+	                } else if (!isArray(dest[key])) {
+	                    throw new Error('Tried to combine array with non-array');
+	                } else {
+	                    dest[key] = deepExtend(dest[key], value);
+	                }
+	            } else if (isObject(value)) {
+	                if (dest[key] === void 0) {
+	                    dest[key] = {};
+	                } else if (!isObject(dest[key])) {
+	                    throw new Error('Tried to combine object with non-object');
+	                } else {
+	                    dest[key] = deepExtend(dest[key], value);
+	                }
+	            } else {
+	                dest[key] = value;
+	            }
+	        }
+	    });
+	
+	    return dest;
+	};
+	
 	/**
 	 * reads the result and returns a Promise either rejected or resolved based on results
 	 *
@@ -1343,6 +1403,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	    });
 	};
 	
+	/**
+	 * returns hostname of given url string
+	 *
+	 * @param {string} url
+	 * @returns {string|null}
+	 */
 	var getHostname = exports.getHostname = function getHostname(url) {
 	    if (url) {
 	        url = normalizeValue(url);
@@ -1355,6 +1421,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	
 	    return null;
+	};
+	
+	/**
+	 * determines if obj passed is of type Object
+	 *
+	 * @param {*} obj
+	 * @returns {boolean}
+	 */
+	var isArray = exports.isArray = function isArray(obj) {
+	    return toString.call(obj) === '[object Array]';
 	};
 	
 	/**
@@ -1514,8 +1590,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    canCreateNewBlob: canCreateNewBlob,
 	    consumed: consumed,
 	    decode: decode,
+	    deepExtend: deepExtend,
 	    fileReaderReady: fileReaderReady,
 	    getHostname: getHostname,
+	    isArray: isArray,
 	    isFunction: isFunction,
 	    isObject: isObject,
 	    isPrototypeOfDataType: isPrototypeOfDataType,
