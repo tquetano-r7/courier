@@ -30,7 +30,7 @@
     "fetch"
   ],
   "license": "MIT",
-  "main": "index.js",
+  "main": "lib/index.js",
   "name": "http-courier",
   "repository": {
     "type": "git",
