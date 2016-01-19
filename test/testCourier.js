@@ -5,6 +5,7 @@ import courier, {
 } from '../src/index';
 
 const defaults = {
+    cache: 'no-cache',
     headers: {
         'CSRFToken': 'blah'
     }
@@ -35,5 +36,20 @@ request
 
 fetch('http://jsonplaceholder.typicode.com/photos?test=me&another=test&to=run&Test=CAPITALS')
     .then((response) => {
+        console.log(response);
+    });
+
+courier({
+    method: 'post',
+    query: {
+        another: 'test',
+        to: 'run',
+        Test: 'CAPITALS'
+    },
+    url: 'http://jsonplaceholder.typicode.com/photos'
+})
+    .send((data, error, response) => {
+        console.log(data);
+        console.log(error);
         console.log(response);
     });

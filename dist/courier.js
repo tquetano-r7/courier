@@ -68,26 +68,38 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.setCourierDefaults = undefined;
 	
-	var _Courier = __webpack_require__(2);
+	__webpack_require__(2);
+	
+	__webpack_require__(3);
+	
+	var _Courier = __webpack_require__(4);
 	
 	var _Courier2 = _interopRequireDefault(_Courier);
 	
-	var _utils = __webpack_require__(4);
+	var _utils = __webpack_require__(6);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	// local imports
+	// polyfills
+	
+	var defaults = undefined;
+	
+	/**
+	 * returns an empty object if parameter is falsy
+	 *
+	 * @param {*} obj
+	 * @returns {Object}
+	 */
+	var coalesceObject = function coalesceObject(obj) {
+	    return obj || {};
+	};
 	
 	/**
 	 * creates new Courier object for request
 	 *
 	 * @returns {Courier}
 	 */
-	
-	var defaults = undefined;
-	
-	var coalesceObject = function coalesceObject(obj) {
-	    return obj || {};
-	};
-	
 	var createCourier = function createCourier(options) {
 	    var newOptions = undefined;
 	
@@ -95,12 +107,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	        options = coalesceObject(options);
 	        defaults = coalesceObject(defaults);
 	
-	        newOptions = Object.assign(options, defaults);
+	        newOptions = Object.assign({}, defaults, options);
 	    }
 	
 	    return new _Courier2.default(newOptions);
 	};
 	
+	/**
+	 * sets the defaults that will be used in future new Couriers
+	 *
+	 * @param {Object} newDefaults
+	 */
 	var setCourierDefaults = exports.setCourierDefaults = function setCourierDefaults() {
 	    var newDefaults = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 	
@@ -111,6 +128,343 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 2 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	/**
+	 * Blob polyfill
+	 * Original author: Eli Grey
+	 * https://github.com/eligrey/Blob.js/
+	 */
+	
+	window.URL = window.URL || window.webkitURL;
+	
+	if (window.Blob && window.URL) {
+	    try {
+	        new Blob();
+	    } catch (e) {
+	        (function () {
+	            // Internally we use a BlobBuilder implementation to base Blob off of
+	            // in order to support older browsers that only have BlobBuilder
+	            var BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder || function () {
+	                // strings and regex
+	                var file_ex_codes = ('NOT_FOUND_ERR SECURITY_ERR ABORT_ERR NOT_READABLE_ERR ENCODING_ERR ' + 'NO_MODIFICATION_ALLOWED_ERR INVALID_STATE_ERR SYNTAX_ERR').split(' ');
+	                var origin = /^[\w-]+:\/*\[?[\w\.:-]+\]?(?::[0-9]+)?/;
+	
+	                // window functions
+	                var atob = window.atob;
+	                var ArrayBuffer = window.ArrayBuffer;
+	                var btoa = window.btoa;
+	                var FileReaderSync = window.FileReaderSync;
+	                var real_URL = window.URL || window.webkitURL || window;
+	                var real_create_object_URL = real_URL.createObjectURL;
+	                var real_revoke_object_URL = real_URL.revokeObjectURL;
+	                var Uint8Array = window.Uint8Array;
+	
+	                // functions we'll use later
+	                var get_class = function get_class(object) {
+	                    return Object.prototype.toString.call(object).match(/^\[object\s(.*)\]$/)[1];
+	                };
+	
+	                var FakeBlobBuilder = function BlobBuilder() {
+	                    this.data = [];
+	                };
+	
+	                var FakeBlob = function Blob(data, type, encoding) {
+	                    this.data = data;
+	                    this.size = data.length;
+	                    this.type = type;
+	                    this.encoding = encoding;
+	                };
+	
+	                var FileException = function FileException(type) {
+	                    this.code = this[this.name = type];
+	                };
+	
+	                var file_ex_code = file_ex_codes.length,
+	                    FBB_proto = FakeBlobBuilder.prototype,
+	                    FB_proto = FakeBlob.prototype,
+	                    URL = real_URL;
+	
+	                FakeBlob.fake = FB_proto.fake = true;
+	
+	                while (file_ex_code--) {
+	                    FileException.prototype[file_ex_codes[file_ex_code]] = file_ex_code + 1;
+	                }
+	
+	                // Polyfill URL
+	                if (!real_URL.createObjectURL) {
+	                    URL = window.URL = function (uri) {
+	                        var uri_info = document.createElementNS('http://www.w3.org/1999/xhtml', 'a'),
+	                            uri_origin = undefined;
+	
+	                        uri_info.href = uri;
+	
+	                        if (!('origin' in uri_info)) {
+	                            if (uri_info.protocol.toLowerCase() === 'data:') {
+	                                uri_info.origin = null;
+	                            } else {
+	                                uri_origin = uri.match(origin);
+	                                uri_info.origin = uri_origin && uri_origin[1];
+	                            }
+	                        }
+	
+	                        return uri_info;
+	                    };
+	                }
+	
+	                URL.createObjectURL = function (blob) {
+	                    var type = blob.type,
+	                        data_URI_header = undefined;
+	
+	                    if (type === null) {
+	                        type = 'application/octet-stream';
+	                    }
+	
+	                    if (blob instanceof FakeBlob) {
+	                        data_URI_header = 'data:' + type;
+	
+	                        if (blob.encoding === 'base64') {
+	                            return data_URI_header + ';base64,' + blob.data;
+	                        } else if (blob.encoding === 'URI') {
+	                            return data_URI_header + ',' + decodeURIComponent(blob.data);
+	                        }if (btoa) {
+	                            return data_URI_header + ';base64,' + btoa(blob.data);
+	                        } else {
+	                            return data_URI_header + ',' + encodeURIComponent(blob.data);
+	                        }
+	                    } else if (real_create_object_URL) {
+	                        return real_create_object_URL.call(real_URL, blob);
+	                    }
+	                };
+	
+	                URL.revokeObjectURL = function (object_URL) {
+	                    if (object_URL.substring(0, 5) !== 'data:' && real_revoke_object_URL) {
+	                        real_revoke_object_URL.call(real_URL, object_URL);
+	                    }
+	                };
+	
+	                FBB_proto.append = function (data /*, endings*/) {
+	                    var bb = this.data;
+	
+	                    // decode data to a binary string
+	                    if (Uint8Array && (data instanceof ArrayBuffer || data instanceof Uint8Array)) {
+	                        var str = '',
+	                            buf = new Uint8Array(data);
+	
+	                        for (var i = 0, buf_len = buf.length; i < buf_len; i++) {
+	                            str += String.fromCharCode(buf[i]);
+	                        }
+	
+	                        bb.push(str);
+	                    } else if (get_class(data) === 'Blob' || get_class(data) === 'File') {
+	                        if (FileReaderSync) {
+	                            var fr = new FileReaderSync();
+	
+	                            bb.push(fr.readAsBinaryString(data));
+	                        } else {
+	                            // async FileReader won't work as BlobBuilder is sync
+	                            throw new FileException('NOT_READABLE_ERR');
+	                        }
+	                    } else if (data instanceof FakeBlob) {
+	                        if (data.encoding === 'base64' && atob) {
+	                            bb.push(atob(data.data));
+	                        } else if (data.encoding === 'URI') {
+	                            bb.push(decodeURIComponent(data.data));
+	                        } else if (data.encoding === 'raw') {
+	                            bb.push(data.data);
+	                        }
+	                    } else {
+	                        if (typeof data !== 'string') {
+	                            data += ''; // convert unsupported types to strings
+	                        }
+	
+	                        // decode UTF-16 to binary string
+	                        bb.push(unescape(encodeURIComponent(data)));
+	                    }
+	                };
+	
+	                FBB_proto.getBlob = function (type) {
+	                    if (!arguments.length) {
+	                        type = null;
+	                    }
+	
+	                    return new FakeBlob(this.data.join(''), type, 'raw');
+	                };
+	
+	                FBB_proto.toString = function () {
+	                    return '[object BlobBuilder]';
+	                };
+	
+	                FB_proto.slice = function (start, end, type) {
+	                    var args = arguments.length;
+	
+	                    if (args < 3) {
+	                        type = null;
+	                    }
+	
+	                    return new FakeBlob(this.data.slice(start, args > 1 ? end : this.data.length), type, this.encoding);
+	                };
+	
+	                FB_proto.toString = function () {
+	                    return '[object Blob]';
+	                };
+	
+	                FB_proto.close = function () {
+	                    this.size = 0;
+	                    delete this.data;
+	                };
+	
+	                return FakeBlobBuilder;
+	            };
+	
+	            window.Blob = function (blobParts, options) {
+	                var type = options ? options.type || '' : '';
+	
+	                var builder = new BlobBuilder();
+	
+	                if (blobParts) {
+	                    for (var i = 0, len = blobParts.length; i < len; i++) {
+	                        if (Uint8Array && blobParts[i] instanceof Uint8Array) {
+	                            builder.append(blobParts[i].buffer);
+	                        } else {
+	                            builder.append(blobParts[i]);
+	                        }
+	                    }
+	                }
+	
+	                var blob = builder.getBlob(type);
+	
+	                if (!blob.slice && blob.webkitSlice) {
+	                    blob.slice = blob.webkitSlice;
+	                }
+	
+	                return blob;
+	            };
+	
+	            var getPrototypeOf = Object.getPrototypeOf || function (object) {
+	                return object.__proto__;
+	            };
+	
+	            window.Blob.prototype = getPrototypeOf(new window.Blob());
+	        })();
+	    }
+	}
+
+/***/ },
+/* 3 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	/**
+	 * FormData polyfill for XMLHttpRequest2
+	 * Original author: Rob Wu
+	 * https://gist.github.com/Rob--W/8b5adedd84c0d36aba64
+	 */
+	
+	if (!window.FormData) {
+	    (function () {
+	        var ___send$rw = XMLHttpRequest.prototype.send;
+	
+	        var FormData = function FormData() {
+	            // Force a Constructor
+	            if (!(this instanceof FormData)) {
+	                return new FormData();
+	            }
+	
+	            // Generate a random boundary - This must be unique with respect to the form's contents.
+	            this.boundary = '------RWWorkerFormDataBoundary' + Math.random().toString(36);
+	
+	            var internal_data = this.data = [];
+	
+	            /**
+	             * Internal method.
+	             * @param inp String | ArrayBuffer | Uint8Array  Input
+	             */
+	            this.__append = function (inp) {
+	                if (typeof inp === 'string') {
+	                    for (var i = 0, len = inp.length; i < len; ++i) {
+	                        internal_data.push(inp.charCodeAt(i) & 0xff);
+	                    }
+	
+	                    /*If ArrayBuffer or typed array */
+	                } else if (inp && inp.byteLength) {
+	                        /* If ArrayBuffer, wrap in view */
+	                        if (!('byteOffset' in inp)) {
+	                            inp = new Uint8Array(inp);
+	                        }
+	
+	                        for (var i = 0, len = inp.byteLength; i < len; ++i) {
+	                            internal_data.push(inp[i] & 0xff);
+	                        }
+	                    }
+	            };
+	        };
+	
+	        XMLHttpRequest.prototype.send = function (data) {
+	            if (data instanceof FormData) {
+	                if (!data.__endedMultipart) {
+	                    data.__append('--' + data.boundary + '--\r\n');
+	                }
+	
+	                data.__endedMultipart = true;
+	
+	                this.setRequestHeader('Content-Type', 'multipart/form-data; boundary=' + data.boundary);
+	
+	                data = new Uint8Array(data.data);
+	            }
+	
+	            // Invoke original XHR.send
+	            return ___send$rw.call(this, data);
+	        };
+	
+	        /**
+	         * @param {string} name
+	         * @param {String|Blob|File|Array|ArrayBuffer} value
+	         * @param {string} filename
+	         **/
+	        FormData.prototype.append = function (name, value, filename) {
+	            if (this.__endedMultipart) {
+	                // Truncate the closing boundary
+	                this.data.length -= this.boundary.length + 6;
+	                this.__endedMultipart = false;
+	            }
+	
+	            if (arguments.length < 2) {
+	                throw new SyntaxError('Not enough arguments');
+	            }
+	
+	            var part = '--' + this.boundary + '\r\nContent-Disposition: form-data; name="' + name + '"';
+	
+	            if (value instanceof File || value instanceof Blob) {
+	                /* eslint-disable */
+	                return this.append(name, new Uint8Array(new FileReaderSync().readAsArrayBuffer(value)), filename || value.name);
+	                /* eslint-enable */
+	            } else if (typeof value.byteLength === 'number') {
+	                    // Duck-typed typed array or array buffer
+	                    part += '; filename="' + (filename || 'blob').replace(/"/g, '%22') + '"\r\n';
+	                    part += 'Content-Type: application/octet-stream\r\n\r\n';
+	
+	                    this.__append(part);
+	                    this.__append(value);
+	
+	                    part = '\r\n';
+	                } else {
+	                    part += '\r\n\r\n' + value + '\r\n';
+	                }
+	
+	            this.__append(part);
+	        };
+	
+	        // Export variable to the global scope
+	        window.FormData = FormData;
+	    })();
+	}
+
+/***/ },
+/* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -123,23 +477,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	    value: true
 	});
 	
-	var _CourierBody = __webpack_require__(3);
+	var _CourierBody = __webpack_require__(5);
 	
 	var _CourierBody2 = _interopRequireDefault(_CourierBody);
 	
-	var _CourierHeaders = __webpack_require__(5);
+	var _CourierHeaders = __webpack_require__(7);
 	
 	var _CourierHeaders2 = _interopRequireDefault(_CourierHeaders);
 	
-	var _CourierRequest = __webpack_require__(6);
+	var _CourierRequest = __webpack_require__(8);
 	
 	var _CourierRequest2 = _interopRequireDefault(_CourierRequest);
 	
-	var _CourierResponse = __webpack_require__(7);
+	var _CourierResponse = __webpack_require__(9);
 	
 	var _CourierResponse2 = _interopRequireDefault(_CourierResponse);
 	
-	var _utils = __webpack_require__(4);
+	var _utils = __webpack_require__(6);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -722,7 +1076,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 3 */
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -731,7 +1085,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    value: true
 	});
 	
-	var _utils = __webpack_require__(4);
+	var _utils = __webpack_require__(6);
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
@@ -903,7 +1257,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 4 */
+/* 6 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1175,7 +1529,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 5 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1186,7 +1540,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    value: true
 	});
 	
-	var _utils = __webpack_require__(4);
+	var _utils = __webpack_require__(6);
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
@@ -1344,7 +1698,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 6 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1353,15 +1707,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	    value: true
 	});
 	
-	var _CourierBody2 = __webpack_require__(3);
+	var _CourierBody2 = __webpack_require__(5);
 	
 	var _CourierBody3 = _interopRequireDefault(_CourierBody2);
 	
-	var _CourierHeaders = __webpack_require__(5);
+	var _CourierHeaders = __webpack_require__(7);
 	
 	var _CourierHeaders2 = _interopRequireDefault(_CourierHeaders);
 	
-	var _utils = __webpack_require__(4);
+	var _utils = __webpack_require__(6);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -1453,7 +1807,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 7 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1462,15 +1816,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	    value: true
 	});
 	
-	var _CourierBody2 = __webpack_require__(3);
+	var _CourierBody2 = __webpack_require__(5);
 	
 	var _CourierBody3 = _interopRequireDefault(_CourierBody2);
 	
-	var _CourierHeaders = __webpack_require__(5);
+	var _CourierHeaders = __webpack_require__(7);
 	
 	var _CourierHeaders2 = _interopRequireDefault(_CourierHeaders);
 	
-	var _utils = __webpack_require__(4);
+	var _utils = __webpack_require__(6);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
