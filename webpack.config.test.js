@@ -1,6 +1,7 @@
-var path = require("path"),
+var assign = require('object.assign/polyfill')(),
+    path = require("path"),
     defaultConfig = require("./webpack.config"),
-    testConfig = Object.assign({}, defaultConfig, {
+    testConfig = assign({}, defaultConfig, {
         entry:[
             path.resolve(__dirname, "test/testCourier")
         ]

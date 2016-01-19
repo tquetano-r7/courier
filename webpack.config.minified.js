@@ -1,12 +1,13 @@
-var path = require('path'),
+var assign = require('object.assign/polyfill')(),
+    path = require('path'),
     webpack = require('webpack'),
     defaultConfig = require('./webpack.config'),
-    productionConfig = Object.assign({}, defaultConfig, {
+    productionConfig = assign({}, defaultConfig, {
         cache: false,
 
         debug: false,
 
-        output: Object.assign({}, defaultConfig.output, {
+        output: assign({}, defaultConfig.output, {
             filename: 'dist/courier.min.js'
         }),
 

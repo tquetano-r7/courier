@@ -17,6 +17,7 @@
     "eslint-friendly-formatter": "^1.2.2",
     "eslint-loader": "^1.2.0",
     "eslint-plugin-babel": "^3.0.0",
+    "object.assign": "^4.0.3",
     "webpack": "^1.12.11",
     "webpack-dev-server": "^1.14.1"
   },
