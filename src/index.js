@@ -1,6 +1,6 @@
 // polyfills
-import 'Blob-polyfill';
-import 'FormData-polyfill';
+import './Blob-polyfill';
+import './FormData-polyfill';
 
 // local imports
 import Courier from './Courier';
