@@ -2,5 +2,9 @@
 dist/
 node_modules/
 src/
+test/
 .gitignore
+.babelrc
+.eslintrc
+server.js
 webpack.*.js
