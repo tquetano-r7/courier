@@ -72,6 +72,12 @@ export const fileReaderReady = (reader) => {
     });
 };
 
+/**
+ * returns hostname of given url string
+ *
+ * @param {string} url
+ * @returns {string|null}
+ */
 export const getHostname = (url) => {
     if (url) {
         url = normalizeValue(url);
@@ -84,6 +90,16 @@ export const getHostname = (url) => {
     }
 
     return null;
+};
+
+/**
+ * determines if obj passed is of type Object
+ *
+ * @param {*} obj
+ * @returns {boolean}
+ */
+export const isArray = (obj) => {
+    return toString.call(obj) === '[object Array]';
 };
 
 /**
@@ -245,6 +261,7 @@ export default {
     decode,
     fileReaderReady,
     getHostname,
+    isArray,
     isFunction,
     isObject,
     isPrototypeOfDataType,

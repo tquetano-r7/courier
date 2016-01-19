@@ -17,6 +17,7 @@
     "eslint-friendly-formatter": "^1.2.2",
     "eslint-loader": "^1.2.0",
     "eslint-plugin-babel": "^3.0.0",
+    "express": "^4.13.3",
     "object.assign": "^4.0.3",
     "webpack": "^1.12.11",
     "webpack-dev-server": "^1.14.1"
@@ -45,5 +46,9 @@
     "dist": "npm run compile && npm run build && npm run build-minified",
     "test": "NODE_ENV=test ./node_modules/webpack-dev-server/bin/webpack-dev-server.js --progress --colors --config=webpack.config.test.js"
   },
-  "version": "1.0.0-alpha"
+  "version": "1.0.0-alpha",
+  "dependencies": {
+    "deep-extend": "^0.4.1",
+    "deepmerge": "^0.2.10"
+  }
 }

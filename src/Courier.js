@@ -1,3 +1,5 @@
+import deepExtend from 'deep-extend';
+
 import CourierBody from './CourierBody';
 import CourierHeaders from './CourierHeaders';
 import CourierRequest from './CourierRequest';
@@ -124,7 +126,7 @@ class Courier {
      * @returns {Courier}
      */
     constructor(options = {}) {
-        const thisOptions = Object.assign(DEFAULT_COURIER_OPTIONS, options);
+        let thisOptions = deepExtend({}, DEFAULT_COURIER_OPTIONS, options);
 
         setNonEnumerable(this, '_cache', thisOptions.cache);
         setNonEnumerable(this, '_data', thisOptions.data);
@@ -462,12 +464,10 @@ class Courier {
         };
 
         this._plugins.forEach((plugin) => {
-            requestInit = plugin(requestInit);
+            requestInit = plugin(requestInit) || requestInit;
         });
 
         const finalURL = requestInit.url;
-
-        delete requestInit.url;
 
         const request = new CourierRequest(finalURL, requestInit);
 

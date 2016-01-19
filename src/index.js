@@ -1,3 +1,6 @@
+// external dependencies
+import deepExtend from 'deep-extend';
+
 // polyfills
 import 'Blob-polyfill';
 import 'FormData-polyfill';
@@ -32,7 +35,7 @@ const createCourier = (options) => {
         options = coalesceObject(options);
         defaults = coalesceObject(defaults);
 
-        newOptions = Object.assign({}, defaults, options);
+        newOptions = deepExtend({}, defaults, options);
     }
 
     return new Courier(newOptions);
