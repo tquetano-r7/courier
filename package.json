@@ -46,9 +46,5 @@
     "dist": "npm run compile && npm run build && npm run build-minified",
     "test": "NODE_ENV=test ./node_modules/webpack-dev-server/bin/webpack-dev-server.js --progress --colors --config=webpack.config.test.js"
   },
-  "version": "1.0.0-alpha",
-  "dependencies": {
-    "deep-extend": "^0.4.1",
-    "deepmerge": "^0.2.10"
-  }
+  "version": "1.0.0-alpha"
 }

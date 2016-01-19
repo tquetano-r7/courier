@@ -54,6 +54,38 @@ export const decode = (body) => {
     return form;
 };
 
+export const deepExtend = (...objects) => {
+    let dest = objects.shift();
+
+    objects.forEach((object) => {
+        for (let key in object) {
+            const value = object[key];
+
+            if (isArray(value)) {
+                if (dest[key] === void 0) {
+                    dest[key] = [];
+                } else if (!isArray(dest[key])) {
+                    throw new Error('Tried to combine array with non-array');
+                } else {
+                    dest[key] = deepExtend(dest[key], value);
+                }
+            } else if (isObject(value)) {
+                if (dest[key] === void 0) {
+                    dest[key] = {};
+                } else if (!isObject(dest[key])) {
+                    throw new Error('Tried to combine object with non-object');
+                } else {
+                    dest[key] = deepExtend(dest[key], value);
+                }
+            } else {
+                dest[key] = value;
+            }
+        }
+    });
+
+    return dest;
+};
+
 /**
  * reads the result and returns a Promise either rejected or resolved based on results
  *
@@ -259,6 +291,7 @@ export default {
     canCreateNewBlob,
     consumed,
     decode,
+    deepExtend,
     fileReaderReady,
     getHostname,
     isArray,

@@ -21,7 +21,7 @@ const request = courier();
 
 request
     //.get('//localhost:3000/test')
-    .get('/api/1/_search')
+    .get('http://jsonplaceholder.typicode.com/photos')
     .query('test', 'me')
     .query({
         another: 'test',
@@ -30,10 +30,10 @@ request
     })
     .use((request) => {
         if (request.url.charAt(0) === '/') {
-            request.url = `//localhost:8099${request.url}`;
+            request.url = `//localhost:8099/${request.url}`;
         }
 
-        return request;
+
     })
     .send((data) => {
         console.log(data);
@@ -44,10 +44,10 @@ request
 //        console.log(response);
 //    });
 
-//courier({
-//    method: 'post',
-//    url: 'http://jsonplaceholder.typicode.com/photos'
-//})
-//    .send((data) => {
-//        console.log(data);
-//    });
+courier({
+    method: 'post',
+    url: 'http://jsonplaceholder.typicode.com/photos'
+})
+    .send((data) => {
+        console.log(data);
+    });

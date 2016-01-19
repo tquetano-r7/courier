@@ -1,6 +1,3 @@
-// external dependencies
-import deepExtend from 'deep-extend';
-
 // polyfills
 import 'Blob-polyfill';
 import 'FormData-polyfill';
@@ -8,6 +5,7 @@ import 'FormData-polyfill';
 // local imports
 import Courier from './Courier';
 import {
+    deepExtend,
     isObject
 } from './utils';
 

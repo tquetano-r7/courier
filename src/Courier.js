@@ -1,10 +1,9 @@
-import deepExtend from 'deep-extend';
-
 import CourierBody from './CourierBody';
 import CourierHeaders from './CourierHeaders';
 import CourierRequest from './CourierRequest';
 import CourierResponse from './CourierResponse';
 import {
+    deepExtend,
     getHostname,
     isPrototypeOfDataType,
     normalizeValue,
