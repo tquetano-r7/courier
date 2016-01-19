@@ -24,6 +24,7 @@ const DEFAULT_COURIER_OPTIONS = {
     method: 'GET',
     password: null,
     queryStrings: [],
+    plugins: [],
     referrer: null,
     type: 'json',
     url: null,
@@ -133,6 +134,7 @@ class Courier {
         setNonEnumerable(this, '_method', thisOptions.method);
         setNonEnumerable(this, '_mode', thisOptions.mode);
         setNonEnumerable(this, '_password', thisOptions.password);
+        setNonEnumerable(this, '_plugins', thisOptions.plugins);
         setNonEnumerable(this, '_queryStrings', thisOptions.queryStrings);
         setNonEnumerable(this, '_type', thisOptions.type);
         setNonEnumerable(this, '_url', thisOptions.url);
@@ -447,7 +449,7 @@ class Courier {
             this._url = this._url.slice(0, -1);
         }
 
-        const requestInit = {
+        let requestInit = {
             body: data ? new CourierBody(data) : null,
             cache: this._cache,
             credentials: this._credentials,
@@ -455,10 +457,19 @@ class Courier {
             method: this._method,
             mode: this._mode || (window.location.hostname === getHostname(this._url) ? 'same-origin' : 'cors'),
             password: this._password,
+            url: this._url,
             username: this._username
         };
 
-        const request = new CourierRequest(this._url, requestInit);
+        this._plugins.forEach((plugin) => {
+            requestInit = plugin(requestInit);
+        });
+
+        const finalURL = requestInit.url;
+
+        delete requestInit.url;
+
+        const request = new CourierRequest(finalURL, requestInit);
 
         let error = null;
         let rawResponse;
@@ -507,6 +518,18 @@ class Courier {
      */
     type(typeString = 'json') {
         this._type = typeString;
+
+        return this;
+    }
+
+    /**
+     * adds function plugins to use as part of the request
+     *
+     * @param {Function} fn
+     * @returns {Courier}
+     */
+    use(fn) {
+        this._plugins.push(fn);
 
         return this;
     }
